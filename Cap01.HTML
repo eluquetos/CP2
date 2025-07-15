@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen de Práctica NACE CP2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .correct {
+            background-color: #A7F3D0 !important; /* Pastel Green */
+            border-color: #34D399 !important;
+            color: #065F46;
+        }
+        .incorrect {
+            background-color: #FECACA !important; /* Pastel Red */
+            border-color: #F87171 !important;
+            color: #991B1B;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="quiz-container" class="w-full max-w-2xl bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+        <!-- Encabezado del Quiz -->
+        <div class="mb-6 text-center">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">Examen de Práctica NACE CP2</h1>
+            <p class="text-slate-500 mt-1">Teoría de la Corrosión</p>
+        </div>
+
+        <!-- Contenido del Quiz (se carga dinámicamente) -->
+        <div id="quiz-content">
+            <div id="progress-container" class="w-full bg-slate-200 rounded-full h-2.5 mb-4">
+                <div id="progress-bar" class="bg-teal-500 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+            <p id="question-counter" class="text-sm text-slate-500 mb-2 text-right"></p>
+            
+            <h2 id="question" class="text-xl font-semibold text-slate-700 mb-2">Cargando pregunta...</h2>
+            <p id="hint" class="text-sm text-slate-500 italic mb-6"></p>
+            
+            <div id="answer-options" class="grid grid-cols-1 gap-4">
+                <!-- Opciones de respuesta se insertan aquí -->
+            </div>
+
+            <div id="feedback-container" class="mt-6 p-4 rounded-lg bg-slate-50 border border-slate-200 hidden">
+                <h3 id="feedback-title" class="font-bold"></h3>
+                <p id="rationale" class="text-slate-600 mt-1"></p>
+            </div>
+        </div>
+        
+        <!-- Pantalla de Resultados -->
+        <div id="results-screen" class="hidden text-center">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">¡Examen Completado!</h2>
+            <p class="text-lg text-slate-600">Tu puntuación final es:</p>
+            <p id="score" class="text-5xl font-bold text-teal-600 my-4"></p>
+            <p id="score-text" class="text-slate-500"></p>
+            <button id="restart-btn" class="mt-8 w-full bg-teal-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors">
+                Volver a Intentar
+            </button>
+        </div>
+
+        <!-- Botón de Navegación -->
+        <div class="mt-8">
+            <button id="next-btn" class="w-full bg-slate-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 hidden">
+                Siguiente Pregunta
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Datos del Quiz (JSON) ---
+        const quizData = {
+            "questions": [
+                {"question":"¿Cuáles son los cuatro componentes esenciales de una celda de corrosión electroquímica?","hint":"Piense en los elementos necesarios para completar un circuito eléctrico que permita tanto el flujo de electrones como el de iones.","answerOptions":[{"text":"Ánodo, Cátodo, Electrolito, Trayectoria Metálica","isCorrect":true,"rationale":"Estos son los cuatro componentes fundamentales. El ánodo y el cátodo son los electrodos, el electrolito conduce los iones y la trayectoria metálica conduce los electrones."},{"text":"Ánodo, Cátodo, Electrolito, Batería","isCorrect":false,"rationale":"Una batería es en sí misma una celda electroquímica, no un componente de otra celda de corrosión."},{"text":"Ánodo, Cátodo, Agua, Metal","isCorrect":false,"rationale":"Aunque el agua puede actuar como electrolito y el metal como trayectoria, esta respuesta es menos precisa, ya que no todos los electrolitos son agua ni la trayectoria es genéricamente \"metal\"."},{"text":"Ánodo, Cátodo, Electrolito, Aislante","isCorrect":false,"rationale":"Un aislante impediría el flujo de electrones entre el ánodo y el cátodo, deteniendo el proceso de corrosión."}]},
+                {"question":"¿En qué parte de una celda de corrosión ocurre la pérdida de metal (oxidación)?","hint":"La oxidación, o pérdida de electrones y masa, define a una de las dos áreas electroquímicas principales.","answerOptions":[{"text":"En el ánodo.","isCorrect":true,"rationale":"Por definición, el ánodo es el sitio donde ocurre la oxidación, lo que resulta en la pérdida de metal a medida que los iones metálicos pasan al electrolito."},{"text":"En el cátodo.","isCorrect":false,"rationale":"En el cátodo no hay pérdida de metal; de hecho, es la superficie que queda protegida en el proceso de corrosión."},{"text":"En el electrolito.","isCorrect":false,"rationale":"El electrolito es el medio conductor de iones, pero no es donde el metal se oxida. Recibe los iones del ánodo."},{"text":"En la trayectoria metálica.","isCorrect":false,"rationale":"La trayectoria metálica conduce electrones entre el ánodo y el cátodo, pero no sufre pérdida de masa por corrosión en sí misma."}]},
+                {"question":"¿Cuál es la fuerza impulsora fundamental que causa el flujo de corriente en una celda de corrosión?","hint":"Al igual que en un circuito eléctrico, se necesita una \"presión\" eléctrica para mover los electrones.","answerOptions":[{"text":"Una diferencia de potencial (voltaje) entre el ánodo y el cátodo.","isCorrect":true,"rationale":"El voltaje, o diferencia de potencial electroquímico, es lo que impulsa el flujo de electrones desde el ánodo hacia el cátodo."},{"text":"La resistividad del electrolito.","isCorrect":false,"rationale":"La resistividad del electrolito afecta la magnitud de la corriente (por la Ley de Ohm), pero no es la fuerza impulsora inicial."},{"text":"La temperatura del metal.","isCorrect":false,"rationale":"La temperatura puede influir en la velocidad de la reacción y crear celdas de corrosión, pero la fuerza impulsora subyacente sigue siendo la diferencia de potencial que genera."},{"text":"La presencia de oxígeno únicamente.","isCorrect":false,"rationale":"El oxígeno es un agente catódico común que puede crear una diferencia de potencial (celda de concentración), pero la corrosión puede ocurrir en ausencia de oxígeno si existe otra fuerza impulsora de voltaje."}]},
+                {"question":"Según la serie galvánica práctica en agua de mar, si se conecta acero al carbono con zinc, ¿cuál de los dos metales actuará como ánodo?","hint":"Consulte la Tabla 1.2 del manual. El metal más \"activo\" o con potencial más negativo se corroe preferentemente.","answerOptions":[{"text":"El zinc.","isCorrect":true,"rationale":"El zinc tiene un potencial de -1.10 V vs CSE, que es significativamente más negativo (más activo) que el del acero al carbono (-0.50 a -0.80 V), por lo que se convertirá en el ánodo."},{"text":"El acero al carbono.","isCorrect":false,"rationale":"El acero al carbono es más noble (menos activo) que el zinc en la serie galvánica, por lo que actuará como cátodo y será protegido."},{"text":"Ambos por igual.","isCorrect":false,"rationale":"Debido a que tienen diferentes potenciales electroquímicos, uno se corroerá preferentemente sobre el otro; no se corroerán por igual."},{"text":"Ninguno, se pasivarán.","isCorrect":false,"rationale":"Ni el zinc ni el acero al carbono forman una capa pasiva estable en agua de mar en estas condiciones; se formará una celda galvánica activa."}]},
+                {"question":"En una tubería enterrada, ¿por qué la parte inferior tiende a corroerse más que la parte superior?","hint":"Este es un ejemplo clásico de una celda de concentración diferencial. Piense en el acceso de gases desde la superficie.","answerOptions":[{"text":"Porque el fondo está en contacto con suelo compacto (baja concentración de oxígeno) y se convierte en el ánodo.","isCorrect":true,"rationale":"El relleno suelto en la parte superior es más permeable al oxígeno, creando un cátodo. El suelo compacto del fondo tiene menos oxígeno, volviéndose anódico."},{"text":"Porque la gravedad atrae los iones corrosivos hacia abajo.","isCorrect":false,"rationale":"Si bien la gravedad existe, el movimiento de iones se rige por campos eléctricos, no por la gravedad. Este no es el mecanismo principal."},{"text":"Porque la parte superior está más caliente por el sol.","isCorrect":false,"rationale":"Las diferencias de temperatura pueden causar corrosión, pero la celda de aireación diferencial es el factor predominante en esta situación específica."},{"text":"Porque el recubrimiento siempre falla primero en la parte inferior.","isCorrect":false,"rationale":"El daño al recubrimiento puede ocurrir en la parte inferior, pero la razón electroquímica subyacente de por qué esa área se corroe preferentemente es la celda de concentración de oxígeno."}]},
+                {"question":"La Ley de Faraday establece que la velocidad de corrosión (pérdida de masa) es directamente proporcional a:","hint":"La ley relaciona la pérdida de masa metálica con la cantidad de carga eléctrica transferida a lo largo del tiempo.","answerOptions":[{"text":"El flujo de corriente.","isCorrect":true,"rationale":"La ley cuantifica la pérdida de peso (W) en función de la corriente (I) y el tiempo (t), mostrando una relación directa."},{"text":"La diferencia de voltaje.","isCorrect":false,"rationale":"El voltaje es la fuerza impulsora, pero la Ley de Faraday se relaciona directamente con la corriente, que es el resultado de ese voltaje y la resistencia del circuito."},{"text":"La resistencia del electrolito.","isCorrect":false,"rationale":"La resistencia afecta la corriente (Ley de Ohm), pero la Ley de Faraday relaciona directamente la pérdida de masa con la corriente, no con la resistencia."},{"text":"La temperatura.","isCorrect":false,"rationale":"La temperatura afecta la velocidad de la reacción y, por lo tanto, la corriente, pero la ley de Faraday se basa fundamentalmente en la corriente, independientemente de cómo se genere."}]},
+                {"question":"¿Cuál es el electrodo de referencia más comúnmente utilizado para medir potenciales en estructuras subterráneas y por qué no es adecuado para su uso en agua salada?","hint":"La contaminación del electrolito interno del electrodo puede alterar su potencial estable y dar lecturas erróneas.","answerOptions":[{"text":"Cobre-Sulfato de Cobre (CSE), y no es adecuado debido a la contaminación por iones de cloruro.","isCorrect":true,"rationale":"El CSE es el estándar para suelos, pero los iones de cloruro del agua salada pueden migrar a través del tapón poroso y contaminar la solución de sulfato de cobre, alterando su potencial."},{"text":"Plata-Cloruro de Plata (Ag/AgCl), y no es adecuado por su alto costo.","isCorrect":false,"rationale":"El Ag/AgCl es, de hecho, el electrodo preferido para agua de mar. Su costo no es la razón por la que el CSE es inadecuado."},{"text":"Zinc (ZRE), y no es adecuado porque es inestable.","isCorrect":false,"rationale":"El zinc se usa como electrodo de referencia, pero el CSE es el más común para mediciones de campo portátiles. La razón de la inadecuación del CSE en agua salada es la contaminación, no la estabilidad del zinc."},{"text":"Calomel (SCE), y no es adecuado por su fragilidad.","isCorrect":false,"rationale":"El electrodo de calomel se usa principalmente en laboratorios y no es el más común para el trabajo de campo en estructuras subterráneas."}]},
+                {"question":"¿Qué condición de relación de áreas entre ánodo y cátodo es la más perjudicial y conduce a una corrosión por picadura (pitting) más severa?","hint":"Piense en la densidad de corriente. La misma cantidad de corriente que sale de un área pequeña es mucho más destructiva.","answerOptions":[{"text":"Un ánodo pequeño y un cátodo grande.","isCorrect":true,"rationale":"Esta combinación es muy desfavorable porque toda la corriente de corrosión generada por el gran cátodo se concentra en el pequeño ánodo, causando una penetración rápida y localizada (picadura)."},{"text":"Un ánodo grande y un cátodo pequeño.","isCorrect":false,"rationale":"Esta es una condición mucho menos dañina, ya que la corriente de corrosión se distribuye sobre un área anódica grande, lo que resulta en una corrosión más uniforme y lenta."},{"text":"Áreas de ánodo y cátodo iguales.","isCorrect":false,"rationale":"Aunque la corrosión ocurrirá, no es la condición más severa para la corrosión localizada en comparación con un ánodo pequeño."},{"text":"Dos ánodos y un cátodo.","isCorrect":false,"rationale":"Tener múltiples ánodos distribuiría la corrosión entre ellos, lo que generalmente es menos dañino que concentrarla en uno solo y pequeño."}]},
+                {"question":"¿Cuál es el efecto general de la polarización en una celda de corrosión?","hint":"La polarización es un fenómeno que se opone al flujo de corriente que la causa.","answerOptions":[{"text":"Disminuye la diferencia de potencial entre el ánodo y el cátodo, reduciendo la velocidad de corrosión.","isCorrect":true,"rationale":"La polarización hace que el potencial del ánodo se vuelva menos activo y el del cátodo más activo, reduciendo el voltaje de la celda y, por lo tanto, la corriente y la velocidad de corrosión."},{"text":"Aumenta la diferencia de potencial, acelerando la corrosión.","isCorrect":false,"rationale":"Esto es lo contrario del efecto de la polarización. Un aumento en la diferencia de potencial aumentaría la velocidad de corrosión."},{"text":"No tiene efecto sobre la velocidad de corrosión.","isCorrect":false,"rationale":"La polarización es un factor clave que gobierna la cinética (velocidad) de la corrosión."},{"text":"Solo afecta al ánodo, nunca al cátodo.","isCorrect":false,"rationale":"La polarización ocurre tanto en la superficie del ánodo como en la del cátodo."}]},
+                {"question":"Al medir el potencial de una estructura bajo protección catódica, el componente de \"Caída de IR\" (IR Drop) debe ser considerado porque:","hint":"Este componente de voltaje se debe a la resistencia del electrolito y puede llevar a una interpretación errónea de los niveles de protección si se incluye en la medición.","answerOptions":[{"text":"Es una caída de voltaje que no forma parte de la polarización real de la estructura y desaparece instantáneamente al interrumpir la corriente.","isCorrect":true,"rationale":"La caída de IR es un error de medición causado por el flujo de corriente a través de una resistencia (el suelo) y no representa la polarización. Debe ser eliminado para obtener un potencial verdadero."},{"text":"Es un tipo de polarización que decae lentamente.","isCorrect":false,"rationale":"La caída de IR no es polarización y su desaparición es instantánea, a diferencia del decaimiento de la polarización que toma tiempo."},{"text":"Solo ocurre en el ánodo y puede ignorarse.","isCorrect":false,"rationale":"La caída de IR ocurre en la ruta de la corriente a través del electrolito hacia la estructura (cátodo) y es un componente crítico que no debe ignorarse para cumplir con los criterios de protección."},{"text":"Aumenta la protección de la estructura.","isCorrect":false,"rationale":"La caída de IR hace que el potencial medido parezca más negativo (más protegido) de lo que realmente es, lo que puede dar una falsa sensación de seguridad."}]},
+                {"question":"¿Cómo afecta un aumento de la temperatura a la polarización y la corriente de corrosión?","hint":"La temperatura tiende a acelerar las reacciones químicas, contrarrestando los efectos de la polarización.","answerOptions":[{"text":"Disminuye la polarización y aumenta la corriente de corrosión.","isCorrect":true,"rationale":"Un aumento de la temperatura acelera la cinética de la reacción, lo que despolariza los electrodos y permite que fluya más corriente para una misma diferencia de potencial."},{"text":"Aumenta la polarización y disminuye la corriente de corrosión.","isCorrect":false,"rationale":"Esto es lo opuesto al efecto real. Esto describiría el efecto de una disminución de la temperatura."},{"text":"Aumenta la polarización y aumenta la corriente de corrosión.","isCorrect":false,"rationale":"Estos dos efectos son contradictorios. Si la polarización aumenta, la corriente tiende a disminuir."},{"text":"Disminuye la polarización y disminuye la corriente de corrosión.","isCorrect":false,"rationale":"Estos dos efectos son contradictorios. Si la polarización disminuye, la corriente tiende a aumentar."}]},
+                {"question":"¿Qué es la pasividad en metales como el acero inoxidable y el titanio?","hint":"Esta película actúa como una barrera, haciendo que el metal se comporte como si fuera mucho más noble de lo que realmente es.","answerOptions":[{"text":"La formación de una película superficial protectora que reduce drásticamente la reactividad química del metal.","isCorrect":true,"rationale":"La pasividad es la pérdida de reactividad química debido a la formación de una película de óxido muy delgada y adherente que actúa como barrera a la corrosión."},{"text":"Una condición en la que el metal se vuelve permanentemente anódico.","isCorrect":false,"rationale":"La pasividad hace que el metal se comporte como un cátodo (más noble), no como un ánodo."},{"text":"Un aumento de la pureza del metal que evita la corrosión.","isCorrect":false,"rationale":"Aunque la pureza puede afectar la corrosión, la pasividad es un fenómeno de formación de película en aleaciones específicas, no simplemente una cuestión de pureza."},{"text":"La disolución completa de los elementos de aleación.","isCorrect":false,"rationale":"Esto describiría un proceso de corrosión activa, como la lixiviación selectiva, que es lo opuesto a la pasividad."}]},
+                {"question":"Un potencial medido de -0.950 V con respecto a un electrodo de Cobre-Sulfato de Cobre (CSE) corresponde a qué valor si se convierte a un electrodo de Plata-Cloruro de Plata (Ag/AgCl)? (Use CSE = +0.316 V y Ag/AgCl (seawater) = +0.256 V)","hint":"La diferencia entre CSE y Ag/AgCl es de aproximadamente 60 mV (0.060 V). Determine si debe sumar o restar esta diferencia para llegar al potencial de Ag/AgCl.","answerOptions":[{"text":"-0.890 V","isCorrect":true,"rationale":"El potencial vs SHE es -0.950V + 0.316V = -0.634V. El potencial vs Ag/AgCl es -0.634V - 0.256V = -0.890V. La conversión correcta es restar la diferencia de potencial de referencia."},{"text":"-1.010 V","isCorrect":false,"rationale":"Este resultado se obtendría si se sumara incorrectamente la diferencia de 0.060 V al valor medido."},{"text":"-0.950 V (no cambia)","isCorrect":false,"rationale":"Los valores de potencial son relativos al electrodo de referencia utilizado, por lo que el valor numérico debe cambiar al convertir entre referencias."},{"text":"-0.634 V","isCorrect":false,"rationale":"Este valor es el potencial absoluto referido a SHE, no el potencial relativo a Ag/AgCl."}]},
+                {"question":"La grafitización del hierro fundido o la descincificación del latón son ejemplos de qué forma de corrosión?","hint":"Este tipo de corrosión implica la eliminación preferencial de un elemento específico de una aleación.","answerOptions":[{"text":"Lixiviación selectiva (Selective Leaching).","isCorrect":true,"rationale":"La lixiviación selectiva es la eliminación de un elemento de una aleación en un proceso de corrosión, como la pérdida de zinc en el latón o la pérdida de hierro en el hierro fundido, dejando una matriz porosa."},{"text":"Corrosión intergranular.","isCorrect":false,"rationale":"La corrosión intergranular es un ataque localizado en los límites de grano de una aleación, no la eliminación de un elemento en toda la matriz."},{"text":"Corrosión galvánica.","isCorrect":false,"rationale":"La corrosión galvánica ocurre entre dos metales diferentes en contacto, no dentro de una misma aleación de esta manera."},{"text":"Fisuración por corrosión bajo tensión (SCC).","isCorrect":false,"rationale":"El SCC es la formación de grietas debido a la acción combinada de la tensión y un ambiente corrosivo, no la disolución selectiva de un elemento."}]},
+                {"question":"¿Qué fenómeno, que puede ser causado por una protección catódica excesiva (potenciales muy negativos), implica la difusión de hidrógeno en la red metálica y la consiguiente reducción de su ductilidad?","hint":"El hidrógeno atómico generado en la superficie del cátodo puede entrar en el metal y causar daños internos.","answerOptions":[{"text":"Fragilización por hidrógeno (Hydrogen Embrittlement).","isCorrect":true,"rationale":"Este término describe específicamente la pérdida de ductilidad de un metal cuando el hidrógeno atómico se difunde en él, lo que puede provocar fallas frágiles."},{"text":"Pasivación.","isCorrect":false,"rationale":"La pasivación es la formación de una capa protectora y es un fenómeno diferente."},{"text":"Corrosión por picadura (Pitting).","isCorrect":false,"rationale":"El pitting es una forma de corrosión localizada que crea agujeros, no una fragilización del material."},{"text":"Lixiviación selectiva.","isCorrect":false,"rationale":"La lixiviación selectiva es la eliminación de un elemento de una aleación, no la entrada de hidrógeno."}]},
+                {"question":"¿Qué demuestra principalmente la Ecuación de Nernst en el contexto de la corrosión?","hint":"Esta ecuación relaciona el potencial de estado estándar con el potencial real en una solución con una actividad iónica específica.","answerOptions":[{"text":"Que el potencial de un electrodo es afectado por la concentración de iones metálicos en el electrolito.","isCorrect":true,"rationale":"La ecuación muestra que el potencial de un electrodo (E) varía con respecto a su potencial estándar (E°) en función de la actividad (concentración) de sus iones en la solución."},{"text":"Que la temperatura no tiene efecto en el potencial.","isCorrect":false,"rationale":"La temperatura (T) es una variable explícita en la Ecuación de Nernst, lo que indica que sí afecta al potencial."},{"text":"Que la corriente es inversamente proporcional al voltaje.","isCorrect":false,"rationale":"La Ecuación de Nernst trata sobre el potencial (voltaje), no sobre la corriente. La relación entre corriente y voltaje se describe mejor con la Ley de Ohm y los diagramas de polarización."},{"text":"Que todos los metales tienen el mismo potencial estándar.","isCorrect":false,"rationale":"La existencia de la serie EMF, con un potencial estándar (E°) único para cada metal, contradice esta afirmación."}]},
+                {"question":"Al medir el voltaje entre dos metales diferentes inmersos en un electrolito, si se conecta el terminal positivo del voltímetro al metal más noble y el negativo al más activo, ¿cómo será la lectura?","hint":"La corriente convencional fluye desde el polo positivo al negativo a través del medidor, lo que resulta en una lectura positiva en los medidores digitales modernos.","answerOptions":[{"text":"Positiva.","isCorrect":true,"rationale":"La corriente convencional fluye desde el cátodo (noble) hacia el ánodo (activo) a través del circuito externo (voltímetro). Conectar el terminal positivo al metal noble alinea el flujo de corriente con la polaridad del medidor."},{"text":"Negativa.","isCorrect":false,"rationale":"Una lectura negativa se obtendría si los terminales del medidor se conectaran al revés (positivo al activo, negativo al noble)."},{"text":"Cero.","isCorrect":false,"rationale":"Una lectura de cero solo ocurriría si no hubiera diferencia de potencial entre los dos metales, lo cual es imposible si son metales diferentes."},{"text":"Dependerá de la temperatura.","isCorrect":false,"rationale":"La temperatura afectará la magnitud del voltaje, pero no el signo (polaridad) de la medición si las conexiones son correctas."}]},
+                {"question":"¿Qué tipo de polarización predomina en electrolitos donde el paso más lento del proceso de reacción es la difusión de reactivos hacia la superficie o la eliminación de productos lejos de ella?","hint":"Este tipo de polarización está relacionado con el \"tráfico\" o la disponibilidad de iones y otras especies químicas en la interfaz metal/electrolito.","answerOptions":[{"text":"Polarización por concentración.","isCorrect":true,"rationale":"Se produce cuando la velocidad de reacción está limitada por la velocidad a la que los reactivos pueden llegar a la superficie o los productos pueden alejarse, creando gradientes de concentración."},{"text":"Polarización por activación.","isCorrect":false,"rationale":"La polarización por activación se refiere a la barrera de energía de la reacción electroquímica en sí misma, asumiendo que los reactivos están fácilmente disponibles."},{"text":"Polarización anódica únicamente.","isCorrect":false,"rationale":"La polarización por concentración puede ocurrir tanto en el ánodo (acumulación de productos) como en el cátodo (agotamiento de reactivos)."},{"text":"Polarización galvánica.","isCorrect":false,"rationale":"\"Polarización galvánica\" no es un término estándar; la polarización ocurre dentro de una celda galvánica, pero se clasifica como de activación o de concentración."}]},
+                {"question":"¿Cuál es la relación entre el proceso de refinación del metal y su tendencia a la corrosión?","hint":"La corrosión es un proceso termodinámicamente favorable que devuelve el metal a su estado de menor energía, similar al mineral del que se extrajo.","answerOptions":[{"text":"La energía añadida durante la refinación para convertir el mineral en metal es liberada durante la corrosión, cuando el metal vuelve a su estado de óxido más estable.","isCorrect":true,"rationale":"Los metales absorben energía durante la refinación para pasar de un estado de baja energía (mineral) a uno de alta energía (metal). La corrosión es el proceso natural de liberación de esa energía."},{"text":"El proceso de refinación elimina la tendencia a la corrosión.","isCorrect":false,"rationale":"Todo lo contrario, el proceso de refinación \"carga\" al metal con la energía que luego impulsará la corrosión."},{"text":"Los metales no absorben energía durante la refinación.","isCorrect":false,"rationale":"Se requiere una cantidad significativa de energía (generalmente calor y electricidad) para transformar los minerales en metales útiles."},{"text":"La corrosión añade más energía al metal.","isCorrect":false,"rationale":"La corrosión es un proceso exotérmico que libera energía, llevando al metal a un estado de menor energía."}]},
+                {"question":"¿Cómo afecta generalmente la protección catódica al fenómeno de Fisuración por Corrosión Bajo Tensión (Stress Corrosion Cracking - SCC)?","hint":"El SCC requiere la presencia de un esfuerzo de tensión y un ambiente corrosivo. La protección catódica actúa sobre uno de estos dos factores.","answerOptions":[{"text":"Generalmente reduce o elimina el SCC porque detiene el proceso de corrosión.","isCorrect":true,"rationale":"Al detener el componente de corrosión del SCC, la protección catódica es generalmente un método eficaz para prevenir este tipo de falla."},{"text":"Siempre causa SCC.","isCorrect":false,"rationale":"Aunque existen casos muy específicos (SCC de pH alto) donde la PC puede contribuir, no es la regla general. Normalmente, previene el SCC."},{"text":"No tiene ningún efecto sobre el SCC.","isCorrect":false,"rationale":"Dado que la corrosión es un componente necesario para el SCC, la protección catódica, que mitiga la corrosión, tiene un efecto directo y significativo."},{"text":"Solo es efectiva contra el SCC en aluminio.","isCorrect":false,"rationale":"La protección catódica es un método de prevención de SCC para muchas aleaciones, incluyendo aceros y otros metales, no solo aluminio."}]}
+            ]
+        };
+
+        // --- Elementos del DOM ---
+        const quizContentEl = document.getElementById('quiz-content');
+        const questionEl = document.getElementById('question');
+        const hintEl = document.getElementById('hint');
+        const answerOptionsEl = document.getElementById('answer-options');
+        const nextBtn = document.getElementById('next-btn');
+        const feedbackContainerEl = document.getElementById('feedback-container');
+        const feedbackTitleEl = document.getElementById('feedback-title');
+        const rationaleEl = document.getElementById('rationale');
+        const resultsScreenEl = document.getElementById('results-screen');
+        const scoreEl = document.getElementById('score');
+        const scoreTextEl = document.getElementById('score-text');
+        const restartBtn = document.getElementById('restart-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounterEl = document.getElementById('question-counter');
+
+        // --- Estado del Quiz ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = [];
+
+        // --- Funciones ---
+
+        function startQuiz() {
+            // Mapeo para normalizar los nombres de las propiedades del JSON original
+            questions = quizData.questions.map(q => ({
+                question: q.question,
+                hint: q.hint,
+                answerOptions: q.answerOptions.map(opt => ({
+                    text: opt.text,
+                    isCorrect: opt.isCorrect,
+                    rationale: opt.rationale
+                }))
+            }));
+            currentQuestionIndex = 0;
+            score = 0;
+            resultsScreenEl.classList.add('hidden');
+            quizContentEl.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            const currentQuestion = questions[currentQuestionIndex];
+            questionEl.innerText = currentQuestion.question;
+            hintEl.innerText = currentQuestion.hint || '';
+            
+            currentQuestion.answerOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option.text;
+                button.classList.add('option-btn', 'w-full', 'p-4', 'text-left', 'bg-slate-100', 'rounded-lg', 'border', 'border-slate-200', 'hover:bg-teal-100', 'hover:border-teal-300');
+                button.addEventListener('click', () => selectAnswer(option, button));
+                answerOptionsEl.appendChild(button);
+            });
+            updateProgress();
+        }
+        
+        function resetState() {
+            nextBtn.classList.add('hidden');
+            feedbackContainerEl.classList.add('hidden');
+            while (answerOptionsEl.firstChild) {
+                answerOptionsEl.removeChild(answerOptionsEl.firstChild);
+            }
+        }
+
+        function selectAnswer(selectedOption, button) {
+            const correct = selectedOption.isCorrect;
+            
+            if (correct) {
+                score++;
+                feedbackTitleEl.innerText = "¡Correcto!";
+                feedbackTitleEl.className = 'font-bold text-green-700';
+            } else {
+                feedbackTitleEl.innerText = "Incorrecto";
+                feedbackTitleEl.className = 'font-bold text-red-700';
+            }
+            
+            rationaleEl.innerText = selectedOption.rationale;
+            feedbackContainerEl.classList.remove('hidden');
+
+            Array.from(answerOptionsEl.children).forEach((btn, index) => {
+                const option = questions[currentQuestionIndex].answerOptions[index];
+                setStatusClass(btn, option.isCorrect);
+                btn.disabled = true; // Deshabilitar botones después de la selección
+            });
+
+            nextBtn.classList.remove('hidden');
+        }
+
+        function setStatusClass(element, isCorrect) {
+            if (isCorrect) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('incorrect');
+            }
+        }
+
+        function showResults() {
+            quizContentEl.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            resultsScreenEl.classList.remove('hidden');
+            const scorePercent = Math.round((score / questions.length) * 100);
+            scoreEl.innerText = `${scorePercent}%`;
+            scoreTextEl.innerText = `Respondiste correctamente ${score} de ${questions.length} preguntas.`;
+        }
+        
+        function updateProgress() {
+            const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            questionCounterEl.innerText = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+        }
+
+        // --- Event Listeners ---
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                progressBar.style.width = '100%';
+                showResults();
+            }
+        });
+
+        restartBtn.addEventListener('click', startQuiz);
+
+        // --- Iniciar el Quiz ---
+        document.addEventListener('DOMContentLoaded', startQuiz);
+
+    </script>
+</body>
+</html>
