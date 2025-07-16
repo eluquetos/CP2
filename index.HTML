@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Principal de Capítulos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos generales del cuerpo */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8; /* Tono pastel de fondo */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Contenedor principal del menú */
+        .menu-container {
+            background-color: #ffffff;
+            padding: 2rem 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        /* Estilo para el logo */
+        .logo {
+            max-width: 250px; /* Ajusta el tamaño del logo si es necesario */
+            margin-bottom: 1.5rem;
+        }
+
+        /* Título principal */
+        h1 {
+            color: #334155;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        /* Lista del menú */
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+
+        .menu-list li {
+            margin-bottom: 1rem;
+        }
+
+        /* Estilo de los enlaces del menú */
+        .menu-list a {
+            display: block;
+            padding: 15px 20px;
+            background-color: #e0e7ff; /* Azul pastel */
+            color: #3730a3; /* Texto oscuro para contraste */
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 400;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border-left: 5px solid #a5b4fc; /* Borde de acento */
+        }
+
+        .menu-list a:hover {
+            background-color: #c7d2fe; /* Tono más oscuro al pasar el ratón */
+            transform: translateX(5px); /* Pequeño desplazamiento */
+            border-left-color: #818cf8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-container">
+        <img src="PetroEnergy.jpg" alt="Logo de PetroEnergy" class="logo" onerror="this.style.display='none'">
+        <h1>Manual de Protección Catódica</h1>
+        <ul class="menu-list">
+            <li><a href="CAP01.HTML">Teoría de la Corrosión</a></li>
+            <li><a href="CAP02.HTML">Fundamentos de PC</a></li>
+            <li><a href="CAP03.HTML">Sistemas de PC</a></li>
+            <li><a href="CAP04.HTML">Fuentes DC para PC</a></li>
+            <li><a href="CAP05.HTML">Seguridad</a></li>
+            <li><a href="CAP06.HTML">Mediciones de campo</a></li>
+            <li><a href="CAP07.HTML">Corrientes vagabundas y Interferencias PC</a></li>
+            <li><a href="CAP08.HTML">Monitoreo y Registros</a></li>
+            <li><a href="ANE01.HTML">Revisión Electricidad Básica</a></li>
+            <li><a href="ANE02.HTML">Teoría de Química y Corrosión (Básica)</a></li>
+            <li><a href="ANE03.HTML">Operación de los medidores</a></li>
+        </ul>
+    </div>
+
+</body>
+</html>
