@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento CP2 - Teoría de la corrosión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto; /* Margen igual al del menú principal */
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+        .option-btn.correct {
+            background-color: #d1fae5 !important; /* Pastel green */
+            border-color: #10b981; /* Green */
+        }
+        .option-btn.incorrect {
+            background-color: #fee2e2 !important; /* Pastel red */
+            border-color: #ef4444; /* Red */
+        }
+        .progress-bar-inner {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<!-- CAMBIO REALIZADO AQUÍ: Se eliminaron las clases de centrado vertical para alinear igual que el index.html -->
+<body class="p-4">
+
+    <div class="quiz-container w-full">
+        <!-- Botón para volver al menú principal -->
+        <div class="absolute top-4 left-4">
+             <a href="index.html" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-300 bg-blue-100 hover:bg-blue-200 px-3 py-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Menú Principal
+            </a>
+        </div>
+
+        <div id="quiz-header" class="text-center mb-6 pt-12">
+            <h1 class="text-3xl font-bold text-gray-800">Entrenamiento CP2 - Teoría de la corrosión</h1>
+            <p class="text-gray-500 mt-2">Selecciona la respuesta que consideres correcta.</p>
+        </div>
+
+        <div id="quiz-body">
+            <!-- Progress Bar and Score -->
+            <div class="flex justify-between items-center mb-4">
+                <span id="question-counter" class="text-sm font-medium text-gray-600"></span>
+                <span id="score" class="text-sm font-medium text-gray-600">Puntuación: 0 / 0</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                <div id="progress-bar" class="bg-blue-500 h-2.5 rounded-full progress-bar-inner" style="width: 0%"></div>
+            </div>
+
+            <!-- Question Area -->
+            <div id="question-area" class="mb-6">
+                <p id="question-text" class="text-xl font-semibold text-gray-700 leading-relaxed"></p>
+            </div>
+
+            <!-- Options Area -->
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Options will be dynamically inserted here -->
+            </div>
+             <!-- Feedback Message -->
+            <div id="feedback-message" class="mt-4 p-4 rounded-lg text-center font-semibold hidden"></div>
+
+            <!-- Navigation -->
+            <div class="mt-8 text-center">
+                <button id="next-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-md hidden">Siguiente Pregunta</button>
+            </div>
+        </div>
+
+        <div id="results-screen" class="hidden text-center">
+             <h2 class="text-4xl font-bold text-gray-800 mb-4">¡Examen Completado!</h2>
+             <p class="text-2xl text-gray-600 mb-2">Tu puntuación final es:</p>
+             <p id="final-score" class="text-6xl font-extrabold text-blue-600 mb-8"></p>
+             <p id="final-message" class="text-lg text-gray-500 mb-8"></p>
+             <button id="restart-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-md">Intentar de Nuevo</button>
+        </div>
+
+    </div>
+
+    <script>
+        // IMPORTANTE: Para cada capítulo (cap02.html, cap03.html, etc.)
+        // deberás reemplazar el contenido de esta variable con las preguntas
+        // correspondientes a ese tema.
+        const quizDataText = `
+1.  **Pregunta:** ¿Cuáles son las cuatro partes esenciales que componen una celda de corrosión?
+    a) Ánodo, cátodo, oxígeno y agua.
+    b) Ánodo, voltaje, corriente y resistencia.
+    c) Cátodo, metal, mineral y energía.
+    d) **Ánodo, cátodo, electrolito y vía metálica.**
+
+2.  **Pregunta:** ¿Qué procesos de pérdida o protección de metal ocurren específicamente en el ánodo y en el cátodo de una celda de corrosión?
+    a) **La pérdida de metal (corrosión) ocurre en el ánodo; el cátodo no experimenta pérdida de metal y está protegido.**
+    b) En el ánodo se produce la reducción de iones y en el cátodo la oxidación del metal.
+    c) Ambos, ánodo y cátodo, sufren una pérdida de metal pero a diferentes velocidades.
+    d) La protección ocurre en el ánodo y la pérdida de metal se concentra en el cátodo.
+
+3.  **Pregunta:** ¿Cómo se define el "potencial de electrodo" y cómo se utiliza el concepto de voltaje en una celda de corrosión?
+    a) El potencial de electrodo es la medida de la resistencia del electrolito; el voltaje es la corriente que fluye entre los electrodos.
+    b) **El potencial de electrodo representa el trabajo reversible para mover una carga unitaria desde el electrodo a través de la solución hasta el electrodo de referencia, y el voltaje es la medida de la diferencia electroquímica entre dos electrodos en un electrolito.**
+    c) El potencial de electrodo es la capacidad del metal para polarizarse; el voltaje mide la cantidad de electrones transferidos.
+    d) El potencial de electrodo es la cantidad de energía absorbida durante la refinación; el voltaje indica la tasa de corrosión.
+
+4.  **Pregunta:** Según las fuentes, ¿cómo afecta la cantidad de energía que un metal absorbe durante su refinación a su tendencia a corroerse?
+    a) **Cuanta más energía absorbe un metal durante la refinación, más activo es y mayor es su tendencia a corroerse.**
+    b) Cuanta más energía absorbe un metal, más noble se vuelve y menos propenso es a corroerse.
+    c) La energía de refinación solo afecta la ductilidad del metal, no su tendencia a la corrosión.
+    d) La energía absorbida durante la refinación hace que el metal sea termodinámicamente más estable y resistente a la corrosión.
+
+5.  **Pregunta:** ¿Por qué el hierro se considera "termodinámicamente inestable" y cuál es su estado natural o de menor energía?
+    a) El hierro es inestable porque reacciona con el hidrógeno para formar compuestos que lo debilitan.
+    b) **Es termodinámicamente inestable porque tiende a corroerse fácilmente para regresar a un estado de menor energía, como el óxido (herrumbre), su forma mineral natural.**
+    c) Es inestable debido a la energía residual de su fabricación; su estado de menor energía es el hierro puro.
+    d) Su inestabilidad proviene de su alta conductividad eléctrica, y su estado más estable es cuando está en contacto con el carbono.
+
+6.  **Pregunta:** ¿Cuál es la principal limitación de la serie de fuerza electromotriz (emf) estándar para predecir la fuerza electromotriz de una celda de corrosión?
+    a) La serie emf solo es útil para metales nobles y no predice el comportamiento de metales activos.
+    b) No considera la temperatura ambiente, lo que es el factor más importante en la corrosión.
+    c) Solo es aplicable a electrolitos de agua de mar, no a otros entornos.
+    d) **La serie emf se produce bajo condiciones ambientales estandarizadas y no tiene en cuenta la polarización de los metales cuando se conectan.**
+
+7.  **Pregunta:** Basándose en la Tabla 1.2 (Serie Galvánica Práctica en Agua de Mar), ¿qué material se comportaría como ánodo si se conecta "acero al carbono limpio" con "cobre"?
+    a) **El acero al carbono limpio se comportaría como ánodo, siendo más activo que el cobre.**
+    b) El cobre se comportaría como ánodo, ya que es más noble que el acero al carbono.
+    c) No habría ánodo ni cátodo, ya que ambos metales tienen potenciales muy similares.
+    d) La corrosión sería uniforme en ambos metales, sin un ánodo definido.
+
+8.  **Pregunta:** Según la Ecuación de Nernst, ¿qué factor clave del electrolito influye en el potencial de un electrodo?
+    a) La resistividad del electrolito.
+    b) **La concentración de iones metálicos en el electrolito.**
+    c) El pH del electrolito.
+    d) La presencia de oxígeno disuelto.
+
+9.  **Pregunta:** ¿Cuál es un ejemplo práctico de cómo una diferencia de temperatura a lo largo de una estructura metálica puede inducir la corrosión?
+    a) Un metal expuesto a la luz solar directa en un extremo y a la sombra en el otro, con la sombra actuando como ánodo.
+    b) La inmersión de un metal en agua a dos profundidades diferentes con distintas concentraciones de oxígeno.
+    c) **Una línea de transmisión de gas saliendo de una estación compresora, donde la tubería caliente es el ánodo y la tubería más fría es el cátodo.**
+    d) La unión de dos metales diferentes a la misma temperatura en un electrolito.
+
+10. **Pregunta:** Mencione dos causas de corrosión relacionadas con las variaciones en la composición o la fabricación de un metal (por ejemplo, el aleado o el estrés).
+    a) Diferencias en la rugosidad de la superficie y la exposición al agua.
+    b) Corrosión por picaduras y corrosión por grietas.
+    c) Cambios en la temperatura ambiental y la presencia de bacterias.
+    d) **Diferencias en la composición de la aleación (como la corrosión intergranular o lixiviación selectiva) y variaciones en el estrés durante la fabricación.**
+
+11. **Pregunta:** ¿Qué son las "celdas de concentración" y por qué se afirma que son responsables de gran parte de la corrosión que ocurre en los suelos?
+    a) **Son celdas que se forman por diferencias en la concentración de sustancias o tipos de sustancias en el electrolito, siendo comunes en suelos debido a la variabilidad de los mismos por donde pasan las tuberías.**
+    b) Celdas formadas por la unión de dos metales diferentes en un suelo uniforme, causando corrosión galvánica.
+    c) Celdas que se forman debido a diferencias de temperatura a lo largo de la tubería, siendo más activas en suelos secos.
+    d) Celdas donde el ánodo y el cátodo están separados por una gran distancia, lo que reduce la tasa de corrosión.
+
+12. **Pregunta:** ¿Cómo se forma una celda de concentración de oxígeno en una tubería enterrada, identificando el ánodo y el cátodo?
+    a) El ánodo se forma donde hay alta concentración de oxígeno (parte superior) y el cátodo donde hay baja concentración (fondo).
+    b) **La parte inferior de la tubería, con menor acceso a oxígeno, se convierte en el ánodo, y el relleno suelto superior, con mayor oxígeno, actúa como cátodo.**
+    c) Se forma por diferencias de salinidad en el suelo, donde el ánodo es la zona de alta salinidad.
+    d) El metal expuesto a la luz solar es el ánodo, y el metal cubierto por la sombra es el cátodo.
+
+13. **Pregunta:** ¿Cuál es la relación directa entre la velocidad de corrosión y el flujo de corriente en una celda de corrosión?
+    a) La velocidad de corrosión es inversamente proporcional al flujo de corriente.
+    b) El flujo de corriente solo afecta la ubicación de la corrosión, no su velocidad general.
+    c) **La velocidad de corrosión es directamente proporcional al flujo de corriente.**
+    d) La corriente es independiente de la velocidad de corrosión; solo el pH la afecta.
+
+14. **Pregunta:** ¿Cuál es el propósito fundamental de los electrodos de referencia en la medición de potenciales de estructuras?
+    a) Determinar la resistividad del suelo para calcular la tasa de corrosión.
+    b) Generar una corriente de protección catódica para prevenir la corrosión.
+    c) Actuar como ánodos de sacrificio para proteger la estructura.
+    d) **Permitir la medición del potencial de una superficie metálica expuesta a un electrolito, representando la diferencia de potencial entre la estructura y el electrodo.**
+
+15. **Pregunta:** ¿Por qué no es adecuado utilizar un electrodo de referencia de cobre-sulfato de cobre (CSE) en un electrolito que contiene iones cloruro?
+    a) **Los iones cloruro pueden migrar a través del tapón poroso y contaminar el CSE, alterando sus reacciones químicas y su potencial de referencia.**
+    b) El CSE se disuelve rápidamente en presencia de iones cloruro, volviéndose inoperable.
+    c) Los iones cloruro elevan la temperatura del electrolito dentro del CSE, afectando su estabilidad.
+    d) El CSE solo es compatible con electrolitos que contienen sulfatos, no cloruros.
+
+16. **Pregunta:** Mencione dos prácticas de "Uso y Cuidado" de los electrodos de referencia de cobre-sulfato de cobre (CSE) para asegurar su estabilidad y precisión.
+    a) Almacenarlos en un ambiente seco y asegurarse de que el electrolito esté siempre diluido.
+    b) **Mantenerlos limpios y con el tapón en el tapón poroso cuando no estén en uso, y asegurarse de que siempre haya cristales sin disolver en la solución.**
+    c) Limpiar el electrodo con papel de lija de óxido de aluminio y rellenarlo con agua destilada.
+    d) Calibrarlos semanalmente con un electrodo de zinc y exponerlos a la luz solar para mantener su activación.
+
+17. **Pregunta:** Describa la diferencia principal en cuanto a su instalación y mantenimiento entre los electrodos de referencia portátiles y los estacionarios.
+    a) Los portátiles se usan para mediciones de pH, mientras que los estacionarios miden solo la resistividad.
+    b) Los estacionarios son más precisos y no requieren calibración, a diferencia de los portátiles.
+    c) **Los electrodos portátiles se pueden transportar y mantener regularmente, mientras que los estacionarios se instalan de forma permanente y no pueden ser movidos ni mantenidos después de la instalación.**
+    d) Los portátiles están diseñados para agua de mar, y los estacionarios para suelos.
+
+18. **Pregunta:** Defina qué es la "polarización" en el contexto de la corrosión y cómo afecta al potencial de la celda y a la tasa de corrosión.
+    a) La polarización es el aumento del potencial de la celda, lo que acelera la tasa de corrosión.
+    b) Es la formación de una capa protectora sobre el metal que aumenta su actividad.
+    c) La polarización es la diferencia de voltaje entre dos metales diferentes que causa la corrosión galvánica.
+    d) **La polarización ocurre cuando fluye corriente, haciendo que los potenciales del ánodo y cátodo se acerquen, lo que reduce la diferencia de potencial, disminuye la corriente y la velocidad de corrosión.**
+
+19. **Pregunta:** ¿Cuáles son los dos tipos principales de polarización, y en qué condiciones tiende a predominar cada uno?
+    a) **Polarización por activación y por concentración; la primera predomina en ambientes con abundantes reactivos, y la segunda en ambientes con baja concentración de reactivos o estancados.**
+    b) Polarización anódica y catódica; la primera predomina en presencia de oxígeno y la segunda en ambientes ácidos.
+    c) Polarización galvánica y electrolítica; la primera se da en metales diferentes y la segunda en un solo metal.
+    d) Polarización térmica y por estrés; la primera por cambios de temperatura y la segunda por deformación del metal.
+
+20. **Pregunta:** ¿Qué es la "pasividad" en los metales y cómo una película superficial puede actuar como barrera para la corrosión?
+    a) La pasividad es el estado en el que un metal se vuelve más activo debido a la disolución de su capa protectora.
+    b) **La pasividad es la pérdida de reactividad química en metales bajo ciertas condiciones, causada por la formación de una película superficial que actúa como barrera protectora contra la corrosión.**
+    c) Es la acumulación de productos de corrosión que aceleran el ataque del metal.
+    d) La pasividad es el punto donde el metal alcanza su potencial más noble y ya no puede corroerse, independientemente del ambiente.
+        `;
+
+        // --- DOM Elements ---
+        const questionCounterEl = document.getElementById('question-counter');
+        const scoreEl = document.getElementById('score');
+        const progressBarEl = document.getElementById('progress-bar');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const feedbackMessageEl = document.getElementById('feedback-message');
+        const nextBtn = document.getElementById('next-btn');
+        const quizBodyEl = document.getElementById('quiz-body');
+        const resultsScreenEl = document.getElementById('results-screen');
+        const finalScoreEl = document.getElementById('final-score');
+        const finalMessageEl = document.getElementById('final-message');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // --- State Variables ---
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answeredCurrentQuestion = false;
+
+        // --- Functions ---
+
+        /**
+         * Parses the raw text data into a structured array of question objects.
+         */
+        function parseQuestions() {
+            const rawQuestions = quizDataText.trim().split(/\n\n/);
+            return rawQuestions.map(q => {
+                const lines = q.trim().split('\n');
+                const questionText = lines[0].replace(/^\d+\.\s*\*\*Pregunta:\*\*\s*/, '');
+                
+                const options = lines.slice(1).map(line => line.trim());
+                const correctAnswerIndex = options.findIndex(opt => opt.includes('**'));
+                
+                const cleanedOptions = options.map(opt => 
+                    opt.replace(/^[a-d]\)\s*\**|\**$/g, '').trim()
+                );
+
+                return {
+                    question: questionText,
+                    options: cleanedOptions,
+                    correctAnswer: correctAnswerIndex
+                };
+            });
+        }
+
+        /**
+         * Displays the current question and its options.
+         */
+        function showQuestion() {
+            answeredCurrentQuestion = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            // Update UI
+            questionCounterEl.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+            questionTextEl.textContent = currentQuestion.question;
+            optionsContainerEl.innerHTML = '';
+            feedbackMessageEl.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+
+            // Create option buttons
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.innerHTML = `<span class="font-bold mr-2">${String.fromCharCode(97 + index)})</span> ${option}`;
+                button.className = 'option-btn w-full text-left p-4 bg-gray-100 rounded-lg hover:bg-gray-200';
+                button.dataset.index = index;
+                button.addEventListener('click', selectAnswer);
+                optionsContainerEl.appendChild(button);
+            });
+
+            updateProgress();
+        }
+
+        /**
+         * Handles the user selecting an answer.
+         * @param {Event} e The click event.
+         */
+        function selectAnswer(e) {
+            if (answeredCurrentQuestion) return;
+
+            const selectedButton = e.currentTarget;
+            const selectedIndex = parseInt(selectedButton.dataset.index);
+            const correctIndex = questions[currentQuestionIndex].correctAnswer;
+
+            // Disable all buttons after selection
+            const optionButtons = optionsContainerEl.querySelectorAll('.option-btn');
+            optionButtons.forEach(btn => btn.disabled = true);
+            
+            // Provide feedback
+            if (selectedIndex === correctIndex) {
+                selectedButton.classList.add('correct');
+                feedbackMessageEl.textContent = '¡Correcto! Muy bien.';
+                feedbackMessageEl.className = 'mt-4 p-4 rounded-lg text-center font-semibold bg-green-100 text-green-800';
+                if (!answeredCurrentQuestion) {
+                    score++;
+                }
+            } else {
+                selectedButton.classList.add('incorrect');
+                optionButtons[correctIndex].classList.add('correct');
+                feedbackMessageEl.textContent = 'Incorrecto. La respuesta correcta está resaltada en verde.';
+                feedbackMessageEl.className = 'mt-4 p-4 rounded-lg text-center font-semibold bg-red-100 text-red-800';
+            }
+            
+            answeredCurrentQuestion = true;
+            feedbackMessageEl.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+            updateScore();
+        }
+
+        /**
+         * Updates the score display.
+         */
+        function updateScore() {
+            scoreEl.textContent = `Puntuación: ${score} / ${questions.length}`;
+        }
+        
+        /**
+         * Updates the progress bar.
+         */
+        function updateProgress() {
+            const progressPercentage = ((currentQuestionIndex) / questions.length) * 100;
+            progressBarEl.style.width = `${progressPercentage}%`;
+        }
+
+        /**
+         * Moves to the next question or shows the results.
+         */
+        function handleNextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+        
+        /**
+         * Displays the final results screen.
+         */
+        function showResults() {
+            quizBodyEl.classList.add('hidden');
+            resultsScreenEl.classList.remove('hidden');
+            
+            const finalPercentage = (score / questions.length) * 100;
+            finalScoreEl.textContent = `${finalPercentage.toFixed(1)}%`;
+            finalScoreEl.textContent += ` (${score}/${questions.length})`;
+
+            let message = '';
+            if (finalPercentage >= 90) {
+                message = "¡Excelente trabajo! Eres un experto en la materia.";
+            } else if (finalPercentage >= 70) {
+                message = "¡Muy bien! Tienes un sólido conocimiento del tema.";
+            } else if (finalPercentage >= 50) {
+                message = "Buen esfuerzo. Sigue repasando para fortalecer tus conocimientos.";
+            } else {
+                message = "No te desanimes. ¡Un poco más de estudio y estarás listo!";
+            }
+            finalMessageEl.textContent = message;
+            updateProgress(); // To make it 100%
+            progressBarEl.style.width = `100%`;
+        }
+
+        /**
+         * Resets the quiz to its initial state.
+         */
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            answeredCurrentQuestion = false;
+            resultsScreenEl.classList.add('hidden');
+            quizBodyEl.classList.remove('hidden');
+            updateScore();
+            showQuestion();
+        }
+
+        // --- Event Listeners ---
+        nextBtn.addEventListener('click', handleNextQuestion);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // --- Initialisation ---
+        function init() {
+            questions = parseQuestions();
+            updateScore();
+            showQuestion();
+        }
+
+        init();
+
+    </script>
+</body>
+</html>
