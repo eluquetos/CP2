@@ -3,99 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Practica para Certificación NACE CP2</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>Práctica para Certificación NACE CP2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Estilos generales del cuerpo */
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f0f4f8; /* Tono pastel de fondo */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Mismo fondo azul-grisáceo claro */
         }
-
-        /* Contenedor principal del menú */
         .menu-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2.5rem;
             background-color: #ffffff;
-            padding: 2rem 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            width: 100%;
-            max-width: 700px;
-            text-align: center;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
         }
-
-        /* Estilo para el logo */
-        .logo {
-            max-width: 250px; /* Ajusta el tamaño del logo si es necesario */
-            margin-bottom: 1.5rem;
+        .topic-link {
+            background-color: #f9fafb; /* Gris muy claro */
+            border-left: 5px solid #3b82f6; /* Acento azul */
+            transition: all 0.3s ease;
         }
-
-        /* Título principal */
-        h1 {
-            color: #334155;
-            margin-bottom: 2rem;
-            font-weight: 700;
-        }
-
-        /* Lista del menú */
-        .menu-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            text-align: left;
-        }
-
-        .menu-list li {
-            margin-bottom: 1rem;
-        }
-
-        /* Estilo de los enlaces del menú */
-        .menu-list a {
-            display: block;
-            padding: 15px 20px;
-            background-color: #e0e7ff; /* Azul pastel */
-            color: #3730a3; /* Texto oscuro para contraste */
-            text-decoration: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 400;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            border-left: 5px solid #a5b4fc; /* Borde de acento */
-        }
-
-        .menu-list a:hover {
-            background-color: #c7d2fe; /* Tono más oscuro al pasar el ratón */
-            transform: translateX(5px); /* Pequeño desplazamiento */
-            border-left-color: #818cf8;
+        .topic-link:hover {
+            background-color: #eff6ff; /* Azul pastel al pasar el mouse */
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-left-color: #1d4ed8; /* Azul más oscuro */
         }
     </style>
 </head>
-<body>
+<body class="p-4">
 
     <div class="menu-container">
-        <img src="PetroEnergy.jpg" alt="Logo de PetroEnergy" class="logo" onerror="this.style.display='none'">
-        <h1>Práctica para Certificación NACE CP2</h1>
-        <ul class="menu-list">
-            <li><a href="cap01.html">Teoría de la Corrosión</a></li>
-            <li><a href="cap02.html">Fundamentos de PC</a></li>
-            <li><a href="cap03.html">Sistemas de PC</a></li>
-            <li><a href="cap04.html">Fuentes DC para PC</a></li>
-            <li><a href="cap05.html">Seguridad</a></li>
-            <li><a href="cap06.html">Mediciones de campo</a></li>
-            <li><a href="cap07.html">Corrientes vagabundas y Interferencias PC</a></li>
-            <li><a href="cap08.html">Monitoreo y Registros</a></li>
-            <li><a href="ane01.html">Revisión Electricidad Básica</a></li>
-            <li><a href="ane02.html">Teoría de Química y Corrosión (Básica)</a></li>
-            <li><a href="ane03.html">Operación de los medidores</a></li>
-        </ul>
+        <!-- Sección del Logo -->
+        <div class="flex justify-center mb-6">
+            <div class="p-3 bg-white rounded-xl shadow-md border border-gray-200">
+                <!-- Se ha actualizado la ruta del logo -->
+                <img src="petroenergy.jpg" alt="Logo de Petro-Energy" class="h-24 w-24 object-contain rounded-md">
+            </div>
+        </div>
+
+        <!-- Título Principal -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-800">Práctica para Certificación NACE CP2</h1>
+            <p class="text-gray-500 mt-2 text-lg">Selecciona un tema para comenzar tu entrenamiento.</p>
+        </div>
+
+        <!-- Lista de Temas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Generado dinámicamente desde JavaScript -->
+            <a href="cap01.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-blue-600 mr-4">01</span>
+                <span class="text-gray-700 font-semibold">Teoría de la Corrosión</span>
+            </a>
+
+            <a href="cap02.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-blue-600 mr-4">02</span>
+                <span class="text-gray-700 font-semibold">Fundamentos de PC</span>
+            </a>
+
+            <a href="cap03.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-blue-600 mr-4">03</span>
+                <span class="text-gray-700 font-semibold">Sistemas de PC</span>
+            </a>
+
+            <a href="cap04.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-blue-600 mr-4">04</span>
+                <span class="text-gray-700 font-semibold">Fuentes DC para PC</span>
+            </a>
+
+            <a href="cap05.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-blue-600 mr-4">05</span>
+                <span class="text-gray-700 font-semibold">Seguridad</span>
+            </a>
+
+            <a href="cap06.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-blue-600 mr-4">06</span>
+                <span class="text-gray-700 font-semibold">Mediciones de campo</span>
+            </a>
+
+            <a href="cap07.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-blue-600 mr-4">07</span>
+                <span class="text-gray-700 font-semibold">Corrientes vagabundas y Interferencias PC</span>
+            </a>
+
+            <a href="cap08.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-blue-600 mr-4">08</span>
+                <span class="text-gray-700 font-semibold">Monitoreo y Registros</span>
+            </a>
+
+            <a href="anexo1.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-gray-500 mr-4">A1</span>
+                <span class="text-gray-700 font-semibold">Revisión Electricidad Básica</span>
+            </a>
+
+            <a href="anexo2.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-gray-500 mr-4">A2</span>
+                <span class="text-gray-700 font-semibold">Teoría de Química y Corrosión (Básica)</span>
+            </a>
+
+            <a href="anexo3.html" class="topic-link flex items-center p-4 rounded-lg">
+                <span class="text-xl font-bold text-gray-500 mr-4">A3</span>
+                <span class="text-gray-700 font-semibold">Operación de los medidores</span>
+            </a>
+
+        </div>
     </div>
 
 </body>
