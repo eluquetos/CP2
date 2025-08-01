@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Teoría de la Corrosión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-2xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Teoría de la Corrosión</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Fundamentos</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Intermedio</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Avanzado</button>
+                <button onclick="selectSet(3)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 4: Experto</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Fundamentos
+            [
+                { question: "¿Cuáles son las cuatro partes esenciales de una celda de corrosión?", options: ["Ánodo, Cátodo, Electrolito, Conductor", "Ácido, Base, Sal, Agua", "Metal, Plástico, Vidrio, Madera", "Voltaje, Corriente, Resistencia, Potencia"], correctAnswer: 0, explanation: "Una celda de corrosión siempre consta de un ánodo, un cátodo, un electrolito (como el suelo o el agua) y una ruta metálica (conductor) para el flujo de electrones." },
+                { question: "¿En qué parte de la celda de corrosión ocurre la pérdida de metal (oxidación)?", options: ["En el cátodo", "En el ánodo", "En el electrolito", "En la ruta metálica"], correctAnswer: 1, explanation: "La corrosión, o pérdida de metal, ocurre en el ánodo, donde el metal se oxida, liberando iones metálicos al electrolito y electrones a la ruta metálica." },
+                { question: "¿Cuál es la función del electrolito en el proceso de corrosión?", options: ["Bloquear el flujo de electrones", "Ser la fuente de metal", "Permitir el flujo de iones", "Proteger el metal"], correctAnswer: 2, explanation: "El electrolito es un medio conductor (como agua o suelo húmedo) que contiene iones y permite que estos se muevan entre el ánodo y el cátodo, completando el circuito eléctrico." },
+                { question: "En el proceso de refinado, un metal como el hierro ¿absorbe o libera energía?", options: ["Libera energía", "No hay cambio de energía", "Absorbe energía", "Crea energía"], correctAnswer: 2, explanation: "Los metales en la naturaleza se encuentran en un estado de baja energía (minerales). El proceso de refinado requiere añadir una gran cantidad de energía para convertirlos en metales puros y útiles." },
+                { question: "Un metal más 'activo' en la serie galvánica, ¿es más o menos propenso a corroerse?", options: ["Menos propenso", "Igual de propenso", "Más propenso", "No se puede determinar"], correctAnswer: 2, explanation: "Los metales más activos (anódicos), como el magnesio o el zinc, tienen un mayor potencial para corroerse en comparación con los metales más nobles (catódicos) como el cobre o el oro." },
+                { question: "¿Qué representa el proceso de corrosión en términos de energía para un metal refinado?", options: ["Una ganancia de energía", "Un retorno a un estado de menor energía", "La creación de un estado de alta energía", "Un estado de energía neutro"], correctAnswer: 1, explanation: "La corrosión es un proceso natural en el que un metal refinado (de alta energía) libera esa energía almacenada para volver a su estado más estable y de menor energía, como el óxido de hierro (herrumbre)." },
+                { question: "¿Qué es la 'ruta metálica' en una celda de corrosión?", options: ["El camino que toman los iones", "El camino que toman los electrones", "El electrolito mismo", "La superficie del cátodo"], correctAnswer: 1, explanation: "La ruta metálica es el conductor eléctrico (el propio metal) que permite a los electrones liberados en el ánodo viajar hasta el cátodo." },
+                { question: "¿Cuál de estos es un ejemplo de un electrolito común?", options: ["Aire seco", "Aceite puro", "Suelo húmedo", "Plástico"], correctAnswer: 2, explanation: "El suelo húmedo, el agua de mar y el concreto son ejemplos comunes de electrolitos porque contienen agua y sales disueltas que permiten el flujo de iones." },
+                { question: "En una batería de zinc-carbono, ¿qué metal actúa como ánodo y se consume?", options: ["El carbono", "El manganeso", "La carcasa protectora", "El zinc"], correctAnswer: 3, explanation: "La batería de zinc-carbono es un ejemplo clásico de una celda galvánica. El zinc es más activo y actúa como el ánodo, corroyéndose (consumiéndose) para generar electricidad." },
+                { question: "¿Qué le sucede a los electrones cuando llegan al cátodo en una celda de corrosión simple en agua?", options: ["Se combinan con iones metálicos", "Se evaporan", "Reaccionan con iones de hidrógeno", "Crean más metal"], correctAnswer: 2, explanation: "En el cátodo, los electrones que fluyeron desde el ánodo se combinan con iones positivos del electrolito, comúnmente iones de hidrógeno (H+), para formar átomos de hidrógeno." }
+            ],
+            // Set 2: Intermedio
+            [
+                { question: "¿Cuál es la principal fuerza impulsora que causa el flujo de corriente en una celda de corrosión?", options: ["La temperatura", "La presión", "La diferencia de voltaje (potencial)", "La gravedad"], correctAnswer: 2, explanation: "La diferencia de potencial electroquímico (voltaje) entre el ánodo y el cátodo es la fuerza impulsora que hace que los electrones fluyan y se inicie el proceso de corrosión." },
+                { question: "En una celda de corrosión por temperatura en una tubería, ¿qué sección actúa como ánodo?", options: ["La sección más fría", "La sección a temperatura ambiente", "La sección más caliente", "Ambas por igual"], correctAnswer: 2, explanation: "Generalmente, en una celda por diferencia de temperatura, la zona del metal a mayor temperatura se vuelve anódica y se corroe más rápidamente que la zona más fría." },
+                { question: "¿Qué describe la Ley de Faraday en el contexto de la corrosión?", options: ["La velocidad de la luz", "La relación entre voltaje y corriente", "La relación entre la pérdida de metal, la corriente y el tiempo", "La resistencia de un material"], correctAnswer: 2, explanation: "La Ley de Faraday establece una relación directa y cuantificable: la cantidad de metal perdido por corrosión es directamente proporcional a la cantidad de corriente que fluye y al tiempo que esta fluye." },
+                { question: "¿Qué es una 'celda de concentración de oxígeno'?", options: ["Una celda donde el oxígeno es el ánodo", "Una celda donde no hay oxígeno", "Una celda formada por diferencias en la concentración de oxígeno", "Una celda que produce oxígeno"], correctAnswer: 2, explanation: "Se forma cuando un mismo metal está expuesto a diferentes concentraciones de oxígeno. El área con menor concentración de oxígeno se convierte en el ánodo (se corroe) y el área con más oxígeno en el cátodo." },
+                { question: "¿Por qué la corrosión en tuberías enterradas a menudo se concentra en la parte inferior?", options: ["Porque la gravedad atrae la corrosión", "Porque la parte inferior tiene menos acceso al oxígeno", "Porque la parte superior está más protegida", "Porque la presión del suelo es mayor"], correctAnswer: 1, explanation: "La parte inferior de la tubería descansa sobre tierra compacta (menos oxígeno), mientras que el relleno superior es más suelto y permeable al aire. Esto crea una celda de concentración de oxígeno, haciendo que la parte inferior sea anódica." },
+                { question: "¿Qué es la 'polarización' en una celda de corrosión?", options: ["La inversión de la corriente", "La reducción de la diferencia de potencial entre ánodo y cátodo", "El aumento de la temperatura", "La destrucción del electrolito"], correctAnswer: 1, explanation: "La polarización es un efecto que reduce la diferencia de potencial inicial entre el ánodo y el cátodo debido a la acumulación de productos de reacción. Esto ralentiza la velocidad de corrosión." },
+                { question: "¿Qué efecto tiene un aumento de la temperatura en la velocidad de la corrosión?", options: ["La disminuye", "No tiene efecto", "Generalmente la aumenta", "La detiene por completo"], correctAnswer: 2, explanation: "Un aumento de la temperatura acelera las reacciones químicas, lo que generalmente despolariza los electrodos y aumenta el flujo de corriente, resultando en una mayor velocidad de corrosión." },
+                { question: "La 'dezincificación' del latón (una aleación de cobre y zinc) es un ejemplo de qué forma de corrosión?", options: ["Corrosión uniforme", "Corrosión por picadura", "Lixiviación selectiva", "Corrosión galvánica"], correctAnswer: 2, explanation: "La lixiviación selectiva es la eliminación de un elemento específico de una aleación. En la dezincificación, el zinc (el elemento más activo) se corroe selectivamente, dejando una estructura de cobre porosa y debilitada." },
+                { question: "¿Qué electrodo de referencia es más comúnmente usado para medir potenciales en estructuras subterráneas?", options: ["Plata-Cloruro de Plata (Ag/AgCl)", "Electrodo de Hidrógeno Estándar (SHE)", "Cobre-Sulfato de Cobre (CSE)", "Electrodo de Calomel"], correctAnswer: 2, explanation: "El electrodo de referencia de Cobre-Sulfato de Cobre (CSE) es el estándar de campo para mediciones en suelos y agua dulce debido a su estabilidad, portabilidad y bajo costo." },
+                { question: "Si se conecta magnesio a acero en agua de mar, ¿qué le pasará al magnesio?", options: ["Se protegerá", "Se corroerá rápidamente", "No le pasará nada", "Se convertirá en cátodo"], correctAnswer: 1, explanation: "El magnesio es mucho más anódico (activo) que el acero en la serie galvánica. Actuará como ánodo de sacrificio, corroyéndose a una velocidad acelerada para proteger al acero (que se convierte en cátodo)." }
+            ],
+            // Set 3: Avanzado
+            [
+                { question: "¿Cuáles son los dos tipos principales de polarización que afectan la velocidad de corrosión?", options: ["Activa y Pasiva", "Anódica y Catódica", "De activación y de concentración", "Interna y Externa"], correctAnswer: 2, explanation: "La polarización de activación se relaciona con la velocidad de la transferencia de electrones en la superficie, mientras que la polarización de concentración se debe a la lentitud en la difusión de reactivos hacia la superficie o productos lejos de ella." },
+                { question: "¿Qué es la 'pasividad' en metales como el acero inoxidable?", options: ["Que el metal es químicamente inerte", "La formación de una película superficial protectora", "Que el metal no puede conducir electricidad", "Que el metal es muy activo"], correctAnswer: 1, explanation: "La pasividad es un fenómeno donde metales como el acero inoxidable o el titanio forman espontáneamente una película de óxido muy delgada, estable y protectora que reduce drásticamente su reactividad y velocidad de corrosión." },
+                { question: "En una solución diluida o estancada, ¿qué tipo de polarización tiende a predominar?", options: ["Polarización de activación", "Polarización de concentración", "Ambas por igual", "Ninguna"], correctAnswer: 1, explanation: "En ambientes con baja concentración de reactivos (como oxígeno en agua estancada), la velocidad de la reacción está limitada por la lentitud con que estos reactivos llegan a la superficie del cátodo. Esto es la polarización por concentración." },
+                { question: "¿Qué es la 'Caída de IR' (IR Drop) y por qué debe considerarse en las mediciones de potencial?", options: ["Es una caída de temperatura", "Es el voltaje perdido en el electrolito debido al flujo de corriente", "Es la resistencia del metal", "Es una medida de la polarización"], correctAnswer: 1, explanation: "La Caída de IR es un error de voltaje incluido en la medición, causado por la corriente de protección que fluye a través de la resistencia del electrolito (suelo). Debe ser eliminada de la lectura para obtener el verdadero potencial polarizado de la estructura." },
+                { question: "En una celda galvánica, una relación de área de ánodo pequeño a cátodo grande es peligrosa porque...", options: ["Reduce la corriente total", "Acelera la corrosión en el ánodo", "Protege al ánodo", "Invierte la polaridad"], correctAnswer: 1, explanation: "Toda la corriente de corrosión se concentra en un área anódica muy pequeña, lo que conduce a una penetración rápida y localizada (picadura), que es mucho más destructiva que la corrosión uniforme." },
+                { question: "¿Qué es la corrosión intergranular?", options: ["Corrosión dentro de los granos del metal", "Corrosión uniforme en la superficie", "Ataque localizado en los límites de grano de una aleación", "Corrosión bajo tensión"], correctAnswer: 2, explanation: "Es un ataque corrosivo preferencial a lo largo de los límites de los granos cristalinos de una aleación, a menudo causado por diferencias de composición en esas zonas, como la sensibilización en aceros inoxidables." },
+                { question: "¿Por qué un electrodo de Cobre-Sulfato de Cobre (CSE) no es adecuado para usar en agua de mar?", options: ["Porque se disuelve", "Porque la presión lo daña", "Porque los iones de cloruro contaminan la solución y alteran su potencial", "Porque no conduce en agua salada"], correctAnswer: 2, explanation: "Los iones de cloruro del agua de mar pueden migrar a través del tapón poroso del CSE, contaminando la solución de sulfato de cobre y causando una desviación significativa en su potencial de referencia estable." },
+                { question: "En un diagrama de polarización de un metal pasivo, ¿qué ocurre en la región 'transpasiva'?", options: ["La corrosión se detiene", "El metal se vuelve más activo", "La película pasiva se rompe y la corriente de corrosión aumenta drásticamente", "Se forma una segunda película pasiva"], correctAnswer: 2, explanation: "Si el potencial se incrementa a un valor muy alto, la película pasiva se vuelve inestable y se rompe, lo que resulta en un rápido aumento de la velocidad de corrosión. A esto se le llama la región transpasiva." },
+                { question: "¿Cómo afecta el pH del electrolito al potencial de corrosión?", options: ["No tiene efecto", "Un pH más bajo (ácido) generalmente hace el potencial más noble", "Un cambio de pH puede crear diferencias de potencial en una estructura", "Un pH más alto (alcalino) siempre detiene la corrosión"], correctAnswer: 2, explanation: "El potencial de un metal cambia con el pH del ambiente. Si diferentes partes de una misma estructura están expuestas a diferentes valores de pH, se puede crear una celda de corrosión." },
+                { question: "¿Qué es la 'Fragilización por Hidrógeno' (Hydrogen Embrittlement)?", options: ["La disolución del metal en hidrógeno", "Una reacción que produce gas hidrógeno", "La pérdida de ductilidad de un metal debido a la absorción de hidrógeno atómico", "La corrosión causada por ácido clorhídrico"], correctAnswer: 2, explanation: "Es un tipo de fallo en el que el hidrógeno atómico (que puede generarse en el cátodo durante la protección catódica) se difunde dentro de la estructura metálica, reduciendo su ductilidad y haciéndolo frágil y propenso a la fractura." }
+            ],
+            // Set 4: Experto
+            [
+                { question: "Un potencial medido es de -0.950 V vs CSE. ¿Cuál es su valor aproximado si se convierte a un electrodo de referencia de Plata-Cloruro de Plata (Ag/AgCl)? (Dato: CSE ≈ +0.316 V vs SHE; Ag/AgCl ≈ +0.256 V vs SHE)", options: ["-1.266 V", "-0.890 V", "-1.010 V", "-0.634 V"], correctAnswer: 1, explanation: "La diferencia entre CSE y Ag/AgCl es de aproximadamente 0.060 V (316-256). Como Ag/AgCl es más 'negativo' que CSE en la escala relativa, el potencial medido será menos negativo. -0.950 V + 0.060 V = -0.890 V." },
+                { question: "¿Bajo qué condiciones específicas puede ocurrir el Agrietamiento por Corrosión Bajo Tensión (SCC) en tuberías de acero debido a la protección catódica?", options: ["En cualquier potencial y pH", "En un rango de potencial estrecho (-525 a -725 mV CSE) y pH alcalino (8-10.5)", "Solo en ambientes muy ácidos", "A potenciales muy negativos (sobreprotección)"], correctAnswer: 1, explanation: "Se ha observado un tipo específico de SCC en tuberías en un rango de potencial muy particular y en un ambiente de pH ligeramente alcalino, a menudo asociado con la formación de carbonatos/bicarbonatos en la superficie del acero." },
+                { question: "En el contexto de la protección catódica, ¿cuál es el papel del oxígeno disuelto?", options: ["Actúa como un inhibidor de la corrosión", "Es el principal reactivo en la reacción anódica", "Actúa como un despolarizador catódico", "No tiene ningún papel relevante"], correctAnswer: 2, explanation: "El oxígeno es el principal 'consumidor' de electrones en la reacción catódica en ambientes neutros. Al reaccionar con los electrones, 'despolariza' el cátodo, permitiendo que el proceso de corrosión continúe. La protección catódica debe superar esta reacción." },
+                { question: "¿Por qué es crucial mantener cristales de sulfato de cobre sin disolver dentro de un electrodo de referencia CSE?", options: ["Para darle peso al electrodo", "Para asegurar que la solución esté siempre saturada", "Para limpiar la varilla de cobre", "Para que sirvan como repuesto"], correctAnswer: 1, explanation: "La presencia de cristales sólidos garantiza que la solución de sulfato de cobre esté saturada. Una solución saturada es esencial para mantener un potencial de referencia constante y estable, que es la función principal del electrodo." },
+                { question: "¿Qué efecto tiene el aumento de la velocidad del flujo de un electrolito sobre la polarización por concentración?", options: ["La aumenta significativamente", "No tiene efecto", "La disminuye", "La invierte"], correctAnswer: 2, explanation: "Un mayor flujo (movimiento) ayuda a reponer los reactivos (como el oxígeno) en la superficie del cátodo y a eliminar los productos de la reacción. Esto reduce la polarización por concentración y puede aumentar la velocidad de corrosión." },
+                { question: "El potencial del Electrodo de Hidrógeno Estándar (SHE) se define por convención como:", options: ["1.000 V", "-1.000 V", "0.000 V", "Depende de la temperatura"], correctAnswer: 2, explanation: "Por convención internacional, el potencial del SHE a condiciones estándar (actividad de iones H+ de 1, presión de gas H2 de 1 atm, 25°C) se establece como el punto cero (0.000 V) para todas las demás mediciones de potencial de electrodo." },
+                { question: "En una estructura de acero en concreto, ¿qué parte del acero se vuelve anódica cuando se contamina con cloruros?", options: ["El acero más profundo", "El acero en el concreto no contaminado", "El acero en el concreto contaminado con cloruros", "Todo el acero por igual"], correctAnswer: 2, explanation: "La presencia de iones de cloruro rompe la capa pasiva del acero en esa zona. Esto crea una potente macrocelda donde el acero en el concreto contaminado se vuelve el ánodo y se corroe, mientras que el acero en el concreto limpio actúa como cátodo." },
+                { question: "La 'limitación de corriente' en una curva de polarización catódica ocurre cuando...", options: ["La reacción se detiene por completo", "La velocidad de reacción alcanza un máximo limitado por la difusión de reactivos", "El voltaje llega a cero", "El ánodo se pasiva"], correctAnswer: 1, explanation: "La corriente deja de aumentar aunque el potencial se haga más negativo. Esto sucede cuando la velocidad de la reacción catódica está limitada por la velocidad a la que los reactivos (ej. oxígeno) pueden difundirse hasta la superficie, un claro indicador de control por concentración." },
+                { question: "¿Por qué se debe evitar la 'sobreprotección' (potenciales demasiado negativos) en el acero pretensado?", options: ["Porque es muy costoso", "Porque puede generar hidrógeno y causar fragilización del acero de alta resistencia", "Porque el concreto se daña", "Porque invierte la corriente del sistema"], correctAnswer: 1, explanation: "El acero utilizado en concreto pretensado es de muy alta resistencia y es particularmente susceptible a la fragilización por hidrógeno. Potenciales excesivamente negativos pueden generar hidrógeno en la superficie del acero, lo que puede llevar a una falla catastrófica." },
+                { question: "Si se conecta una tubería de acero nueva a una tubería de acero vieja y oxidada, ¿cuál actuará típicamente como ánodo?", options: ["La tubería vieja y oxidada", "Ambas por igual", "La tubería nueva", "Ninguna, al ser del mismo material"], correctAnswer: 2, explanation: "El acero nuevo y brillante es electroquímicamente más activo (anódico) que el acero viejo cubierto por una capa de óxido más estable (catódica). Esto crea una celda galvánica donde la tubería nueva se corroerá preferentemente para 'proteger' a la vieja." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            answersContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === question.correctAnswer;
+            
+            // Disable all buttons after an answer is selected
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                // Highlight the correct answer
+                answersContainer.children[question.correctAnswer].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            startGame();
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
