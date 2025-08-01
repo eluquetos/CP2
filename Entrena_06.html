@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Mediciones de Campo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-3xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Mediciones de Campo</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Fundamentos</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Errores y Correcciones</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Técnicas de Sondeo</button>
+                <button onclick="selectSet(3)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 4: Análisis y Pruebas</button>
+                <button onclick="selectSet(4)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg lg:col-span-3">Nivel 5: Casos Prácticos y Aislamiento</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Fundamentos de Medición
+            [
+                { question: "¿Qué mide un potencial estructura-electrolito?", options: ["La corriente en la tubería", "La resistencia del suelo", "La diferencia de potencial entre la estructura y un electrodo de referencia", "La temperatura de la estructura"], correctAnswer: 2, explanation: "Mide la diferencia de voltaje entre la superficie metálica de la estructura y el electrolito circundante, utilizando un electrodo de referencia en contacto con dicho electrolito." },
+                { question: "Para medir un potencial estructura-electrolito, se necesita un voltímetro con...", options: ["Baja resistencia de entrada", "Alta resistencia de entrada", "Capacidad de medir CA", "Una pantalla grande"], correctAnswer: 1, explanation: "Se requiere un voltímetro de alta resistencia de entrada para evitar que la corriente del circuito de medición fluya a través del medidor, lo que alteraría la lectura y daría un valor inexacto." },
+                { question: "¿Cuál de los siguientes NO es un uso común de los sondeos de potencial?", options: ["Localizar áreas anódicas", "Determinar la efectividad de la PC", "Medir el espesor del recubrimiento", "Localizar cortos eléctricos"], correctAnswer: 2, explanation: "Los sondeos de potencial se usan para evaluar condiciones electroquímicas como la ubicación de ánodos, la efectividad de la PC y la presencia de cortos, pero no miden directamente el espesor físico de un recubrimiento." },
+                { question: "Al medir corriente directamente con un amperímetro, ¿cómo debe conectarse en el circuito?", options: ["En paralelo", "En serie", "No se conecta", "A tierra"], correctAnswer: 1, explanation: "Para medir el flujo de corriente, un amperímetro siempre debe insertarse en serie dentro del circuito, de modo que toda la corriente que se va a medir pase a través de él." },
+                { question: "Idealmente, un amperímetro debe tener una resistencia interna...", options: ["Muy alta", "Igual a la del circuito", "Muy baja", "Variable"], correctAnswer: 2, explanation: "Un amperímetro ideal tiene una resistencia interna muy baja para no añadir una resistencia significativa al circuito, lo que alteraría la corriente que se está tratando de medir." },
+                { question: "El método Wenner de 4 pines se utiliza para medir...", options: ["El potencial de la tubería", "La corriente de la tubería", "La resistividad del suelo", "El pH del suelo"], correctAnswer: 2, explanation: "El método Wenner es una técnica estándar de campo que utiliza cuatro pines espaciados uniformemente para medir la resistividad promedio del suelo a una profundidad aproximadamente igual al espaciado de los pines." },
+                { question: "Según ASTM C876, ¿qué potencial indica una probabilidad de corrosión mayor al 95% en el acero de refuerzo en concreto?", options: ["Más positivo que -200 mV", "Entre -200 y -350 mV", "Más negativo que -350 mV", "Cero mV"], correctAnswer: 2, explanation: "Para el acero en concreto, un potencial más negativo que -350 mV (vs CSE) indica una alta probabilidad (superior al 95%) de que la corrosión esté activa." },
+                { question: "¿Qué es un cupón de PC?", options: ["Un descuento en equipos", "Una pequeña muestra de metal igual a la estructura, usada para monitoreo", "Un tipo de electrodo de referencia", "Un dispositivo para medir la resistividad"], correctAnswer: 1, explanation: "Un cupón es una pequeña pieza del mismo metal que la estructura, que se conecta eléctricamente a ella y se entierra cerca. Sirve para simular un defecto en el recubrimiento y permite mediciones de potencial sin caída de IR." },
+                { question: "La frecuencia de fugas en una tubería sin protección catódica tiende a...", options: ["Disminuir con el tiempo", "Mantenerse constante", "Aumentar logarítmicamente con el tiempo", "Ser completamente aleatoria"], correctAnswer: 2, explanation: "La corrosión es un proceso que se acelera, por lo que el número acumulado de fugas en una estructura sin proteger generalmente sigue una curva de crecimiento logarítmico a lo largo del tiempo." },
+                { question: "Para medir la resistividad del suelo con el método Wenner, se aplica ____ a los pines exteriores y se mide ____ en los pines interiores.", options: ["Voltaje, Corriente", "Corriente, Voltaje", "Resistencia, Potencial", "Temperatura, pH"], correctAnswer: 1, explanation: "El método consiste en inyectar una corriente conocida (I) a través de los dos pines exteriores y medir la diferencia de potencial (V) que se genera entre los dos pines interiores. La resistencia (R=V/I) se usa para calcular la resistividad." }
+            ],
+            // Set 2: Errores y Correcciones
+            [
+                { question: "¿Qué es la 'Caída de IR' (IR Drop) en una medición de potencial?", options: ["Una caída en la temperatura", "El voltaje perdido en el electrolito debido al flujo de corriente", "La resistencia del metal de la tubería", "Una medida de la polarización"], correctAnswer: 1, explanation: "La Caída de IR es un error de voltaje incluido en la medición 'ON', causado por la corriente de protección que fluye a través de la resistencia del electrolito (suelo). Hace que el potencial parezca más protegido de lo que realmente está." },
+                { question: "Si la resistencia de entrada de un voltímetro es demasiado baja en comparación con la resistencia del circuito, la lectura de potencial será...", options: ["Más alta que la real", "Más baja (menos negativa) que la real", "Exactamente la real", "Inestable"], correctAnswer: 1, explanation: "Una baja resistencia del medidor 'roba' corriente del circuito de medición, causando una caída de voltaje adicional y resultando en una lectura de potencial erróneamente baja (menos negativa)." },
+                { question: "¿Cuál es el método más efectivo para eliminar el error de Caída de IR de una medición de potencial?", options: ["Usar un electrodo de referencia más grande", "Mojar el suelo", "Interrumpir la corriente de PC y medir el potencial 'instant-off'", "Promediar varias lecturas"], correctAnswer: 2, explanation: "Al interrumpir momentáneamente toda la corriente de PC, la Caída de IR (que depende de la corriente) se elimina instantáneamente. La medición en ese preciso instante ('instant-off') revela el potencial polarizado verdadero." },
+                { question: "¿Qué es el potencial 'instant-off'?", options: ["El potencial medido con la corriente encendida", "El potencial medido mucho después de apagar la corriente", "El potencial medido inmediatamente después de interrumpir la corriente, antes de que la polarización decaiga", "El potencial nativo de la estructura"], correctAnswer: 2, explanation: "Es la lectura de potencial tomada en el instante en que la corriente de PC se apaga. En este punto, la Caída de IR es cero, pero la polarización de la estructura aún no ha tenido tiempo de disiparse." },
+                { question: "En una tubería bien recubierta, la mayor parte de la Caída de IR en el suelo se concentra...", options: ["A lo largo de toda la tubería", "En la superficie del suelo", "En la vecindad inmediata de los defectos del recubrimiento (holidays)", "Cerca del rectificador"], correctAnswer: 2, explanation: "La corriente de PC fluye casi exclusivamente hacia los defectos del recubrimiento. Por lo tanto, el gradiente de voltaje (Caída de IR) en el suelo es más significativo cerca de estos puntos." },
+                { question: "Si al medir un potencial con dos impedancias de entrada diferentes (ej. 1 MΩ y 10 MΩ) la lectura cambia significativamente, esto indica...", options: ["Que el medidor está dañado", "Que hay una alta resistencia en el circuito de medición", "Que la protección catódica es adecuada", "Que hay corrientes parásitas"], correctAnswer: 1, explanation: "Este es un método de campo para detectar problemas. Un cambio grande en la lectura al cambiar la impedancia del medidor significa que hay una alta resistencia en el circuito (ej. mal contacto del electrodo, cable roto) que está afectando la medición." },
+                { question: "Para minimizar la Caída de IR sin interrumpir la corriente, ¿dónde se debe colocar el electrodo de referencia?", options: ["Lo más lejos posible de la tubería", "En 'tierra remota'", "Lo más cerca posible de la superficie de la estructura", "A la misma profundidad que la tubería"], correctAnswer: 2, explanation: "Colocar el electrodo de referencia muy cerca de la estructura reduce la cantidad de electrolito (y por lo tanto, la resistencia) en la ruta de medición, lo que minimiza la componente de Caída de IR en la lectura." },
+                { question: "Al usar la interrupción de corriente, ¿por qué es importante que TODOS los rectificadores que afectan el área sean interrumpidos simultáneamente?", options: ["Para ahorrar energía", "Porque si una fuente permanece encendida, seguirá habiendo Caída de IR en la medición", "Para evitar dañar los rectificadores", "No es importante"], correctAnswer: 1, explanation: "La Caída de IR en un punto es la suma de los efectos de todas las fuentes de corriente. Si una sola fuente permanece activa, seguirá produciendo una Caída de IR, y la medición 'off' no será verdaderamente libre de este error." },
+                { question: "¿Qué es el 'spike' o pico que a veces se observa inmediatamente después de interrumpir la corriente?", options: ["Una señal de que la protección es buena", "Un efecto inductivo/capacitivo que debe decaer antes de tomar la lectura 'off'", "Un error del medidor", "El potencial real de la estructura"], correctAnswer: 1, explanation: "El cambio rápido de corriente puede inducir un pico de voltaje transitorio. Se debe esperar a que este pico se disipe (generalmente en milisegundos) para medir el verdadero potencial 'instant-off'." },
+                { question: "El uso de cupones de PC permite una medición de potencial libre de Caída de IR porque...", options: ["El cupón no está conectado a la tubería", "El cupón es muy pequeño", "Se puede interrumpir la conexión cupón-tubería en el cabezal de prueba sin interrumpir el rectificador", "El cupón tiene un recubrimiento especial"], correctAnswer: 2, explanation: "El rectificador protege continuamente tanto la tubería como el cupón. Para medir, se desconecta momentáneamente el cable del cupón. La corriente hacia el cupón se detiene, eliminando la Caída de IR local, y se puede medir su potencial polarizado." }
+            ],
+            // Set 3: Técnicas de Sondeo
+            [
+                { question: "¿Qué es un Sondeo de Potencial a Intervalos Cortos (CIS o CIPS)?", options: ["Medir el potencial solo en los postes de prueba", "Una serie de mediciones de potencial tomadas a intervalos muy cercanos (ej. cada metro) sobre la tubería", "Una inspección visual de la tubería", "Una medición de la resistividad del suelo"], correctAnswer: 1, explanation: "Un CIS consiste en caminar sobre la tubería y tomar lecturas de potencial a intervalos muy cortos para obtener un perfil detallado y continuo del nivel de protección a lo largo de toda la línea." },
+                { question: "En un sondeo CIS 'interrumpido', ¿qué dos valores de potencial se registran en cada punto?", options: ["Potencial y temperatura", "Potencial 'ON' y potencial 'OFF'", "Potencial y resistividad", "Potencial sobre la tubería y a un lado"], correctAnswer: 1, explanation: "En un CIS interrumpido, se sincronizan los rectificadores para que se enciendan y apaguen. En cada punto, el técnico registra tanto el potencial con la corriente aplicada ('ON') como el potencial libre de caída de IR ('OFF')." },
+                { question: "En un gráfico de un CIS sobre una tubería protegida, ¿dónde se espera que estén las lecturas de potencial 'OFF' para cumplir el criterio de -850mV?", options: ["Por encima (menos negativo) de -850 mV", "Por debajo (más negativo) de -850 mV", "Exactamente en -850 mV", "Variando aleatoriamente"], correctAnswer: 1, explanation: "Para que la protección sea adecuada según el criterio de -850 mV polarizado, todas las lecturas 'OFF' (que representan el potencial polarizado) deben estar por debajo de la línea de -850 mV en el gráfico." },
+                { question: "¿Qué es un sondeo DCVG (Gradiente de Voltaje de Corriente Continua)?", options: ["Un método para medir el espesor de la pared de la tubería", "Un método para localizar defectos en el recubrimiento midiendo gradientes de voltaje en el suelo", "Un sondeo de resistividad del suelo", "Una forma de medir el pH"], correctAnswer: 1, explanation: "El DCVG es una técnica que detecta las fugas de corriente de PC en los defectos del recubrimiento. Se hace midiendo la diferencia de potencial (gradiente de voltaje) en el suelo entre dos electrodos." },
+                { question: "En un sondeo DCVG, a medida que el técnico se acerca a un defecto del recubrimiento, la deflexión en el voltímetro analógico...", options: ["Disminuye", "Se mantiene constante", "Aumenta", "Se invierte"], correctAnswer: 2, explanation: "La corriente de PC se concentra en los defectos. A medida que el técnico se acerca a un defecto, el gradiente de voltaje en el suelo se hace más fuerte, lo que resulta en una mayor deflexión de la aguja del medidor." },
+                { question: "El método Pearson es similar al DCVG, pero utiliza una señal de ____ para detectar defectos en el recubrimiento.", options: ["Corriente continua (CC)", "Alta frecuencia (Radio)", "Corriente alterna (CA) de audiofrecuencia", "Ultrasonido"], correctAnswer: 2, explanation: "El método Pearson impresiona una señal de CA de audiofrecuencia en la tubería. Los defectos se localizan al escuchar un aumento en la intensidad de esta señal con un receptor especial mientras se camina sobre la línea." },
+                { question: "¿Qué es un sondeo lateral o 'side drain' en una tubería no protegida?", options: ["Una forma de drenar agua de la zanja", "Medir potenciales no solo sobre la tubería, sino también a una distancia perpendicular a ella", "Un tipo de sondeo de corriente", "Una inspección visual lateral"], correctAnswer: 1, explanation: "Consiste en tomar lecturas de potencial directamente sobre la tubería y también a una distancia lateral (ej. 10 o 25 pies). La comparación de estas lecturas ayuda a identificar si un área está recogiendo (catódica) o descargando (anódica) corriente." },
+                { question: "En una tubería no protegida, un área anódica (corrosiva) se identifica cuando el potencial sobre la tubería es ____ y los potenciales laterales son ____.", options: ["más negativo / menos negativos", "menos negativo / más negativos", "igual / diferentes", "diferentes / iguales"], correctAnswer: 0, explanation: "Un punto de descarga de corriente (ánodo) se caracteriza porque el potencial sobre la tubería es más negativo que las áreas circundantes, y los potenciales medidos a los lados son menos negativos que el potencial sobre la tubería." },
+                { question: "El Mapeador de Corriente de Tubería (PCM) es un equipo que...", options: ["Mapea la ubicación física de la tubería", "Mide y mapea la magnitud y dirección de una señal de CA de baja frecuencia en la tubería", "Crea un mapa de la resistividad del suelo", "Dibuja un esquema de la tubería"], correctAnswer: 1, explanation: "El PCM aplica una señal específica a la tubería y permite al operador medir la cantidad de corriente de esa señal y su dirección. Una pérdida de corriente entre dos puntos indica un defecto en el recubrimiento o un contacto." },
+                { question: "Para probar si una brida aislante está funcionando, se miden los potenciales a cada lado con el electrodo de referencia en un solo lugar. Si la brida funciona, las lecturas serán...", options: ["Idénticas", "Muy similares", "Apreciablemente diferentes", "Positivas"], correctAnswer: 2, explanation: "Si la brida está aislando correctamente, las dos secciones de tubería estarán eléctricamente separadas y, por lo general, tendrán potenciales estructura-electrolito notablemente diferentes." }
+            ],
+            // Set 4: Análisis y Pruebas Especiales
+            [
+                { question: "¿Cómo se determina la resistencia de un tramo de tubería para una prueba de corriente de 2 hilos (2-wire)?", options: ["Midiéndola directamente con un óhmetro", "Usando tablas estándar basadas en el diámetro, espesor y longitud del tramo", "Se asume que es 1 ohmio", "No se puede determinar"], correctAnswer: 1, explanation: "Conociendo el tamaño, peso por pie (o espesor de pared) y la longitud del tramo de tubería entre los dos cables de prueba, se puede calcular su resistencia eléctrica utilizando tablas de ingeniería estándar." },
+                { question: "La prueba de corriente de 4 hilos (4-wire) es más precisa que la de 2 hilos porque...", options: ["Usa cables más gruesos", "Calibra la resistencia real del tramo de tubería in-situ", "Es más rápida de realizar", "No requiere una batería"], correctAnswer: 1, explanation: "El método de 4 hilos no depende de tablas. Se inyecta una corriente conocida a través de los dos cables exteriores y se mide el cambio de voltaje resultante en los dos cables interiores, lo que permite calcular la resistencia real de ese tramo específico." },
+                { question: "En una prueba de corriente (IR drop), si el terminal positivo del medidor está conectado al punto 'A' y el negativo al 'B', y la lectura es positiva, la corriente fluye de...", options: ["B hacia A", "A hacia B", "En ambas direcciones", "No se puede determinar"], correctAnswer: 1, explanation: "Por convención, la corriente fluye desde el punto de mayor potencial (positivo) al de menor potencial (negativo). Si la lectura es positiva, la corriente fluye en la misma dirección que la conexión del medidor, de A a B." },
+                { question: "La resistencia del recubrimiento se calcula multiplicando la resistencia tubería-tierra por...", options: ["La longitud de la tubería", "El área superficial de la tubería", "La resistividad del suelo", "La corriente aplicada"], correctAnswer: 1, explanation: "La resistencia del recubrimiento es una medida de la calidad general del aislamiento. Se calcula como la resistencia eléctrica de la tubería al suelo (en Ohmios) multiplicada por el área superficial total de la tubería (en pies² o m²)." },
+                { question: "Una prueba de requerimiento de corriente se realiza para...", options: ["Determinar cuánta corriente se necesita para proteger una estructura", "Probar la vida útil de los ánodos", "Medir la resistividad del suelo", "Encontrar defectos en el recubrimiento"], correctAnswer: 0, explanation: "Esta prueba utiliza una fuente de poder temporal y un lecho anódico de prueba para aplicar diferentes niveles de corriente a una estructura y medir la polarización resultante, lo que permite diseñar un sistema de PC permanente." },
+                { question: "El método de resistividad de Barnes Layer se utiliza para...", options: ["Calcular la resistividad promedio total", "Calcular la resistividad de capas individuales de suelo a diferentes profundidades", "Medir la resistencia de un solo punto", "Corregir errores de temperatura"], correctAnswer: 1, explanation: "A partir de una serie de mediciones Wenner a diferentes espaciamientos, el método de Barnes permite calcular la resistividad de cada capa de suelo por separado, en lugar de solo el promedio desde la superficie." },
+                { question: "Un localizador de tuberías de tipo 'conductivo' requiere...", options: ["Que la tubería no sea metálica", "Una conexión eléctrica directa a la tubería", "Colocar el transmisor directamente sobre la tubería sin contacto", "Que la tubería esté vacía"], correctAnswer: 1, explanation: "El modo conductivo es el más preciso. Requiere conectar físicamente un cable del transmisor a la tubería y otro a una pica de tierra para aplicar la señal." },
+                { question: "Si al probar una brida aislante con un localizador conductivo, la señal 'salta' y continúa en el otro lado, significa que la brida...", options: ["Está funcionando perfectamente", "Está enterrada muy profundo", "Está en cortocircuito (no aísla)", "Necesita ser pintada"], correctAnswer: 2, explanation: "Si la brida estuviera aislando, la señal de CA del localizador se detendría. Si la señal continúa sin atenuación al otro lado, indica que hay una ruta eléctrica continua, es decir, la brida está en corto." },
+                { question: "Un 'corto metálico' en un encamisado (casing) significa que...", options: ["Hay agua en el espacio anular", "El encamisado y la tubería portadora están en contacto metal-con-metal", "El encamisado está bien aislado", "El encamisado está corroído"], correctAnswer: 1, explanation: "Un corto metálico es un contacto físico directo entre la tubería portadora y el encamisado, lo que anula el aislamiento eléctrico y hace que el encamisado consuma una gran cantidad de corriente de protección catódica." },
+                { question: "Si al medir potenciales en un encamisado, el potencial del encamisado y el de la tubería son casi idénticos, es un fuerte indicio de...", options: ["Un buen aislamiento", "Un acoplamiento electrolítico", "Un cortocircuito metálico", "Que no hay corrosión"], correctAnswer: 2, explanation: "Si ambas estructuras están en contacto metálico directo, compartirán el mismo potencial eléctrico. Por lo tanto, medir potenciales casi iguales en la tubería y en el encamisado es una señal clara de un cortocircuito." }
+            ],
+             // Set 5: Casos Prácticos y Aislamiento
+            [
+                { question: "¿Qué es un 'acoplamiento electrolítico' en un encamisado (casing)?", options: ["Un contacto metal-con-metal directo.", "Un cortocircuito causado por un cable.", "Cuando un electrolito de baja resistencia (agua, lodo) llena el espacio anular.", "Cuando el encamisado está perfectamente aislado."], correctAnswer: 2, explanation: "A diferencia de un corto metálico, un acoplamiento electrolítico ocurre cuando el espacio entre la tubería y el encamisado se llena de un conductor (como agua), creando una ruta para la corriente sin un contacto directo de metal." },
+                { question: "Si al interrumpir la corriente, los potenciales 'ON' y 'OFF' del encamisado y la tubería ciclan en unisono y con la misma magnitud, esto indica...", options: ["Que están bien aislados.", "Un acoplamiento electrolítico.", "Que el rectificador está fallando.", "Un cortocircuito metálico."], correctAnswer: 3, explanation: "Si ambas estructuras están en corto, se comportan como una sola. Por lo tanto, responderán de manera idéntica a la interrupción de la corriente, con los potenciales 'ON' y 'OFF' cambiando juntos y en la misma magnitud." },
+                { question: "En una prueba de corriente de 4 hilos, ¿para qué se usan los dos cables exteriores?", options: ["Para medir el cambio de voltaje.", "Para inyectar la corriente de prueba.", "Para conectar el electrodo de referencia.", "Como cables de repuesto."], correctAnswer: 1, explanation: "En la configuración de 4 hilos, los dos cables exteriores se conectan a una fuente de poder para inyectar una corriente de prueba conocida a través del tramo de tubería." },
+                { question: "En la misma prueba de 4 hilos, ¿para qué se usan los dos cables interiores?", options: ["Para inyectar la corriente de prueba.", "Para medir la diferencia de potencial (caída de voltaje) resultante.", "Para conectar a tierra el equipo.", "Para medir la temperatura."], correctAnswer: 1, explanation: "Los dos cables interiores se conectan a un voltímetro de alta impedancia para medir con precisión la caída de voltaje creada por la corriente de prueba, sin verse afectados por la resistencia de los cables de corriente." },
+                { question: "¿Qué indica un aplanamiento en la curva de frecuencia de fugas acumuladas vs. tiempo?", options: ["Que la corrosión se está acelerando.", "Que la protección catódica está siendo efectiva en mitigar la corrosión.", "Que la tubería es nueva.", "Que hay un error en los registros."], correctAnswer: 1, explanation: "Una curva de fugas que se aplana o se vuelve horizontal indica que la tasa de nuevas fugas ha disminuido drásticamente o se ha detenido, lo cual es una fuerte evidencia de la efectividad de un sistema de protección catódica." },
+                { question: "¿Qué es un 'puerco inteligente' (instrumented pig)?", options: ["Un dispositivo de limpieza de tuberías.", "Una herramienta que se inserta en la tubería para medir la corrosión interna y defectos.", "Un tipo de ánodo de corriente impresa.", "Un sensor para medir la resistividad del suelo."], correctAnswer: 1, explanation: "Es un dispositivo sofisticado que viaja por el interior de la tubería para inspeccionar la condición de la pared del tubo, utilizando tecnologías como ultrasonido o flujo magnético para detectar y medir la pérdida de metal por corrosión." },
+                { question: "En un sondeo de resistividad Wenner, si la línea de pines corre paralela y muy cerca de una tubería metálica, la lectura de resistividad será...", options: ["Más alta que la real.", "Más baja que la real.", "No se verá afectada.", "Imposible de medir."], correctAnswer: 1, explanation: "La tubería metálica ofrece una ruta de baja resistencia para la corriente de prueba. Parte de la corriente fluirá por la tubería en lugar del suelo, resultando en una caída de voltaje menor y, por lo tanto, una lectura de resistividad falsamente baja." },
+                { question: "Un localizador de tuberías de tipo 'conductivo' es útil para probar el aislamiento porque...", options: ["Mide la resistencia directamente.", "La señal de CA aplicada se detendrá en un aislador que funcione correctamente.", "Puede inducir una señal a través de un aislador.", "Funciona mejor en tuberías no metálicas."], correctAnswer: 1, explanation: "Se aplica una señal de CA directamente a la tubería. Si un aislador (como una brida) está funcionando, la señal no podrá cruzarlo. Si la señal se detecta en el otro lado, el aislador está en cortocircuito." },
+                { question: "Para verificar la continuidad eléctrica en una estructura de concreto reforzado, ¿qué lecturas de potencial sugieren continuidad?", options: ["Lecturas muy diferentes entre sí.", "Lecturas que varían más de 0.1V.", "Lecturas de potencial casi idénticas (dentro de ±1-3 mV).", "Lecturas siempre negativas."], correctAnswer: 2, explanation: "Si todas las barras de refuerzo están eléctricamente conectadas, compartirán el mismo potencial. Por lo tanto, medir potenciales prácticamente iguales en diferentes puntos indica que son eléctricamente continuos." },
+                { question: "¿Cuál es el propósito de una prueba de requerimiento de corriente?", options: ["Medir la corriente existente en una tubería.", "Probar la continuidad eléctrica.", "Determinar la cantidad de corriente necesaria para llevar una estructura a un criterio de protección.", "Verificar el estado de las bridas aislantes."], correctAnswer: 2, explanation: "Se realiza antes de diseñar un sistema de PC permanente. Se aplica corriente de forma controlada con un sistema temporal para ver cómo responde la estructura y así calcular la corriente que necesitará el sistema final." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+        let lastCorrectIndex = -1; // Variable to track the last correct answer's position
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            lastCorrectIndex = -1; // Reset for each new game
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            // --- Logic to shuffle answers ---
+            const correctAnswerText = question.options[question.correctAnswer];
+            let shuffledOptions;
+            let newCorrectIndex;
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            do {
+                shuffledOptions = shuffleArray([...question.options]);
+                newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+            } while (currentQuestionIndex > 0 && newCorrectIndex === lastCorrectIndex && question.options.length > 1);
+            
+            lastCorrectIndex = newCorrectIndex;
+            // --- End of shuffle logic ---
+
+            answersContainer.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button, newCorrectIndex);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button, correctIndex) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                answersContainer.children[correctIndex].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            startGame();
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
