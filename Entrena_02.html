@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Fundamentos de Protección Catódica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-2xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Fundamentos de Protección Catódica</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Conceptos Básicos</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Requisitos y Factores</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Criterios de Protección</button>
+                <button onclick="selectSet(3)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 4: Criterios Avanzados y Aplicaciones</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Conceptos Básicos
+            [
+                { question: "¿Cuál es el concepto principal de la Protección Catódica (PC)?", options: ["Aumentar la diferencia de potencial", "Hacer que toda la estructura sea un ánodo", "Eliminar la diferencia de potencial entre sitios anódicos y catódicos", "Usar un recubrimiento más grueso"], correctAnswer: 2, explanation: "La PC funciona aplicando una corriente externa para forzar a todos los sitios de la estructura a actuar como cátodos, eliminando la diferencia de potencial que impulsa la corrosión." },
+                { question: "¿Qué le sucede a la estructura protegida en una celda de PC intencional?", options: ["Se convierte en el ánodo", "Se convierte en el cátodo", "Se disuelve rápidamente", "No cambia"], correctAnswer: 1, explanation: "En un sistema de protección catódica, la estructura que se desea proteger se convierte en el cátodo de una nueva y más grande celda de corrosión, deteniendo así la pérdida de metal en ella." },
+                { question: "¿Qué es la polarización en el contexto de la PC?", options: ["Un cambio de potencial causado por la corriente", "El derretimiento del metal", "Un tipo de recubrimiento", "La medición de la temperatura"], correctAnswer: 0, explanation: "La polarización es el cambio en el potencial de la estructura causado por el flujo de la corriente de protección catódica. Es el efecto que realmente detiene la corrosión." },
+                { question: "Para mitigar la corrosión, todos los sitios catódicos deben polarizarse a un potencial igual al del...", options: ["Sitio catódico más noble", "Potencial de circuito abierto del ánodo más activo", "Potencial promedio de la estructura", "Potencial del electrolito"], correctAnswer: 1, explanation: "El verdadero criterio para detener la corrosión es polarizar todos los sitios catódicos hasta que alcancen el potencial del sitio anódico más activo, lo que elimina la fuerza impulsora de la corrosión." },
+                { question: "¿En qué dirección cambia el potencial de una estructura cuando se polariza catódicamente?", options: ["En dirección positiva (más noble)", "No cambia de dirección", "En dirección electronegativa (más activa)", "Se vuelve cero inmediatamente"], correctAnswer: 2, explanation: "Al aplicar corriente catódica, el potencial de la estructura se desplaza en la dirección negativa (más activa), acercándose al potencial de los sitios anódicos." },
+                { question: "¿En qué punto se detiene la corrosión de un metal cuando se aplica protección catódica?", options: ["Cuando la corriente de PC es la mitad de la corriente de corrosión", "Cuando la corriente de PC iguala o excede la corriente de corrosión", "Cuando el voltaje llega a cero", "Tan pronto como se aplica cualquier corriente"], correctAnswer: 1, explanation: "Para detener completamente la corrosión, la corriente de protección catódica aplicada debe ser suficiente para contrarrestar toda la corriente de corrosión natural de la estructura." },
+                { question: "¿Por qué es imposible en la práctica determinar el potencial de circuito abierto del sitio anódico más activo?", options: ["Porque los instrumentos no son precisos", "Porque las celdas de corrosión son microscópicas y numerosas", "Porque el potencial cambia muy rápido", "Porque el suelo interfiere con la medición"], correctAnswer: 1, explanation: "Las celdas de corrosión en una estructura son generalmente microscópicas e innumerables, por lo que no podemos aislar y medir el ánodo más activo. Por eso se usan criterios sustitutos." },
+                { question: "¿Qué es un potencial 'corrosión' o 'mixto' (Ecorr)?", options: ["El potencial del ánodo únicamente", "El potencial del cátodo únicamente", "Un potencial promedio de varias celdas de corrosión activas", "El potencial del electrodo de referencia"], correctAnswer: 2, explanation: "El potencial que medimos en una estructura que se corroe libremente no es el de un ánodo o cátodo puro, sino un potencial mixto o promedio de todas las celdas de corrosión que operan en su superficie." },
+                { question: "La relación entre la corriente de PC aplicada y la reducción de la corrosión es...", options: ["Lineal", "Logarítmica", "Exponencial inversa", "No tienen relación"], correctAnswer: 1, explanation: "La relación es logarítmica. Esto significa que el primer incremento de corriente de PC produce la mayor reducción en la velocidad de corrosión." },
+                { question: "Si no se alcanza el criterio completo de protección, ¿la PC aplicada tiene algún efecto?", options: ["No, no tiene ningún efecto", "Sí, reduce la velocidad de corrosión parcialmente", "Acelera la corrosión", "Daña el recubrimiento"], correctAnswer: 1, explanation: "Incluso si no se alcanza un criterio de protección total, cualquier cantidad de corriente catódica aplicada reducirá la corriente de corrosión y, por lo tanto, disminuirá la velocidad de la corrosión." }
+            ],
+            // Set 2: Requisitos y Factores
+            [
+                { question: "¿De qué dos factores principales depende la cantidad de corriente requerida para la PC?", options: ["Del color y la temperatura", "Del área superficial y el comportamiento de polarización", "De la presión y la hora del día", "Del tipo de metal y su antigüedad"], correctAnswer: 1, explanation: "La corriente necesaria depende directamente del área de metal expuesta al electrolito y de cómo esa estructura se polariza en ese ambiente específico." },
+                { question: "¿Cómo afecta un recubrimiento al área superficial que necesita protección?", options: ["Aumenta el área", "No la afecta", "Reduce el área a solo los defectos (holidays)", "Hace que el área sea cero"], correctAnswer: 2, explanation: "Un recubrimiento aísla la mayor parte del metal. La corriente de PC solo se necesita en las pequeñas áreas donde el recubrimiento está dañado (holidays), reduciendo drásticamente el área a proteger." },
+                { question: "En general, ¿dónde se requiere más corriente de PC, en un ambiente de pH bajo (ácido) o pH alto (básico)?", options: ["En pH alto (básico)", "El pH no afecta", "En pH bajo (ácido)", "En pH neutro"], correctAnswer: 2, explanation: "Los ambientes ácidos (pH bajo) requieren más corriente de protección porque hay una mayor concentración de iones de hidrógeno para reaccionar en el cátodo, lo que dificulta la polarización." },
+                { question: "¿Cómo afecta un aumento de la temperatura a la corriente requerida para la PC?", options: ["La disminuye", "No tiene efecto", "La aumenta", "La hace inestable"], correctAnswer: 2, explanation: "Un aumento de la temperatura acelera las reacciones químicas y la difusión de especies como el oxígeno. Esto tiene un efecto despolarizante, por lo que se necesita más corriente para lograr el mismo nivel de protección." },
+                { question: "¿Cuál es el papel del oxígeno en los requerimientos de corriente de PC?", options: ["Disminuye la corriente necesaria", "Aumenta la corriente necesaria", "No tiene ningún papel", "Actúa como inhibidor"], correctAnswer: 1, explanation: "El oxígeno es un potente despolarizador catódico. Al consumir los electrones en el cátodo, dificulta la polarización, por lo que se requiere más corriente de PC en ambientes bien aireados." },
+                { question: "Un barco que se mueve, ¿requiere más o menos corriente de PC que un barco en reposo?", options: ["Menos corriente", "La misma corriente", "Más corriente", "La PC no funciona en barcos"], correctAnswer: 2, explanation: "El movimiento relativo entre la estructura y el electrolito (agua) repone constantemente el oxígeno en la superficie, despolarizando el cátodo. Por lo tanto, un barco en movimiento requiere más corriente." },
+                { question: "¿Qué es la 'sobreprotección'?", options: ["Aplicar la cantidad justa de corriente", "Aplicar menos corriente de la necesaria", "Aplicar corriente en exceso, más allá de lo necesario para detener la corrosión", "Un tipo de recubrimiento especial"], correctAnswer: 2, explanation: "La sobreprotección ocurre cuando se aplican potenciales mucho más negativos de lo necesario. No ofrece beneficios adicionales y puede ser perjudicial para ciertos metales y recubrimientos." },
+                { question: "¿Por qué la sobreprotección es perjudicial para metales anfóteros como el aluminio o el plomo?", options: ["Porque los derrite", "Porque crea un pH alcalino en la superficie que los corroe", "Porque los vuelve magnéticos", "Porque es muy costoso"], correctAnswer: 1, explanation: "Los metales anfóteros se corroen en ambientes muy ácidos o muy alcalinos. La sobreprotección genera iones hidroxilo (OH-) en el cátodo, creando un pH alcalino que puede atacar y corroer estos metales." },
+                { question: "Además de dañar metales anfóteros, ¿qué otro efecto negativo puede tener la sobreprotección?", options: ["Mejorar la adherencia del recubrimiento", "Causar desprendimiento del recubrimiento y fragilización por hidrógeno", "Hacer la estructura más fuerte", "Limpiar la superficie del metal"], correctAnswer: 1, explanation: "Potenciales excesivamente negativos pueden generar gas hidrógeno, que puede causar el desprendimiento (disbonding) de los recubrimientos y la fragilización de aceros de alta resistencia." },
+                { question: "Una tubería en suelo arenoso y bien aireado, ¿requerirá más o menos corriente que una en arcilla compacta?", options: ["Menos corriente", "La misma corriente", "Más corriente", "El tipo de suelo no importa"], correctAnswer: 2, explanation: "El suelo arenoso está bien aireado, lo que significa una alta concentración de oxígeno. Como el oxígeno es un despolarizador, se necesitará más corriente para proteger la tubería en comparación con la arcilla, que es menos aireada." }
+            ],
+            // Set 3: Criterios de Protección
+            [
+                { question: "Según NACE RP0169, ¿cuál es el criterio de potencial más común para la protección catódica del acero?", options: ["-550 mV vs CSE", "-850 mV vs CSE", "-1200 mV vs CSE", "0 mV vs CSE"], correctAnswer: 1, explanation: "Un potencial de -850 mV o más negativo, medido con un electrodo de Cobre-Sulfato de Cobre (CSE), es el criterio más aceptado. Se basa en que el potencial más activo del acero nuevo en la mayoría de los suelos es cercano a este valor." },
+                { question: "Al aplicar el criterio de -850 mV, ¿qué error de medición se debe considerar o eliminar?", options: ["Error de temperatura", "Error de calibración del equipo", "Caída de voltaje (Caída de IR)", "Error humano"], correctAnswer: 2, explanation: "La Caída de IR es el voltaje generado por la propia corriente de protección al pasar por el electrolito. Este valor está incluido en la lectura 'ON' y debe ser eliminado para conocer el verdadero potencial de la estructura." },
+                { question: "¿Qué es un potencial 'polarizado'?", options: ["El potencial medido con la corriente encendida", "El potencial de la estructura sin la Caída de IR", "El potencial nativo antes de aplicar PC", "La suma del potencial de corrosión y la polarización catódica"], correctAnswer: 3, explanation: "El potencial polarizado es el verdadero potencial en la interfaz estructura/electrolito, que es la suma del potencial de corrosión original más el cambio de potencial (polarización) causado por la corriente de PC." },
+                { question: "El criterio de -850 mV 'polarizado' o 'instant-off' se considera cumplido cuando...", options: ["La lectura con corriente ('ON') es -850 mV", "El potencial, medido inmediatamente después de interrumpir la corriente, es -850 mV", "El potencial nativo es -850 mV", "Se aplican 850 mA de corriente"], correctAnswer: 1, explanation: "Este criterio requiere medir el potencial en el instante en que se apaga la corriente ('instant-off'). En ese momento, la Caída de IR desaparece, pero la polarización aún no ha decaído, dando la lectura del potencial polarizado real." },
+                { question: "¿En qué consiste el criterio de los 100 mV de polarización?", options: ["El potencial debe ser exactamente 100 mV", "El potencial debe cambiar 100 mV en la dirección anódica", "Se debe lograr un cambio de potencial (polarización) de al menos 100 mV", "La corriente debe ser de 100 mA"], correctAnswer: 2, explanation: "Este criterio se cumple si se demuestra que la aplicación de la PC ha causado un cambio de potencial (polarización) de al menos 100 mV en la dirección catódica desde su estado de corrosión libre." },
+                { question: "¿Cómo se mide la formación de polarización para el criterio de 100 mV?", options: ["Comparando el potencial 'ON' con el potencial 'OFF'", "Midiendo el potencial nativo y luego el potencial 'instant-off' con la PC aplicada", "Midiendo la corriente", "Midiendo la resistividad"], correctAnswer: 1, explanation: "Se mide el potencial nativo (Ecorr), luego se aplica la PC y se mide el potencial polarizado (Eoff). La diferencia (Eoff - Ecorr) debe ser de al menos 100 mV." },
+                { question: "¿Cómo se mide el decaimiento de la polarización para el criterio de 100 mV?", options: ["Comparando el potencial 'ON' con el potencial nativo", "Midiendo el potencial 'instant-off' y esperando a que decaiga 100 mV hacia el potencial nativo", "Apagando el sistema por 100 minutos", "Aumentando la corriente en 100 mA"], correctAnswer: 1, explanation: "Se mide el potencial polarizado (Eoff) y luego se mantiene el sistema apagado. Se considera cumplido si el potencial decae (se vuelve menos negativo) al menos 100 mV." },
+                { question: "¿Por qué se desarrolló el criterio de 100 mV de polarización?", options: ["Porque el de -850 mV era muy fácil de lograr", "Porque -850 mV puede ser demasiado conservador y costoso para estructuras antiguas", "Porque es más preciso", "Porque es el único válido para aluminio"], correctAnswer: 1, explanation: "En estructuras antiguas, el potencial de corrosión es a menudo menos negativo que -850 mV. Polarizar hasta -850 mV sería excesivo. Un cambio de 100 mV asegura una reducción significativa de la corrosión de manera más económica." },
+                { question: "Para que una medición de potencial represente el potencial polarizado, ¿dónde debería ubicarse idealmente el electrodo de referencia?", options: ["A 100 metros de la estructura", "En la superficie del suelo", "Lo más cerca posible de la interfaz estructura/electrolito", "Conectado directamente al punto de drenaje"], correctAnswer: 2, explanation: "Colocar el electrodo de referencia muy cerca de la superficie de la estructura minimiza la cantidad de electrolito (suelo) en el circuito de medición, reduciendo así la Caída de IR." },
+                { question: "Un potencial medido 'ON' es -1100 mV. El potencial 'Instant-OFF' es -900 mV. ¿Cuál es la magnitud de la Caída de IR?", options: ["1100 mV", "900 mV", "200 mV", "No se puede determinar"], correctAnswer: 2, explanation: "La Caída de IR es la diferencia entre el potencial con la corriente encendida ('ON') y el potencial polarizado ('OFF'). En este caso, 1100 mV - 900 mV = 200 mV." }
+            ],
+            // Set 4: Criterios Avanzados y Aplicaciones
+            [
+                { question: "¿Cuál es el criterio principal de PC para el aluminio según NACE RP0169?", options: ["Un potencial de -850 mV", "Un potencial de -1500 mV", "Un mínimo de 100 mV de polarización", "No se puede proteger catódicamente"], correctAnswer: 2, explanation: "Para el aluminio, el criterio principal es lograr al menos 100 mV de polarización. No se usa un valor de potencial fijo como -850 mV." },
+                { question: "¿Qué límite de potencial negativo no se debe exceder para el aluminio para evitar la corrosión alcalina?", options: ["-850 mV vs CSE", "-1000 mV vs CSE", "-1200 mV vs CSE", "-950 mV vs CSE"], correctAnswer: 2, explanation: "Debido a que el aluminio es anfótero, potenciales más negativos que -1200 mV vs CSE pueden crear un ambiente alcalino en su superficie que cause corrosión. Esto es un límite de sobreprotección." },
+                { question: "Para el acero de refuerzo en concreto (acero corrugado), ¿cuál es uno de los criterios especificados en NACE RP0290?", options: ["Un decaimiento de polarización de 10 mV", "Un potencial de -500 mV", "Un decaimiento o formación de polarización de 100 mV", "Aplicar 1 A de corriente"], correctAnswer: 2, explanation: "Similar al criterio para tuberías, un criterio clave para el acero en concreto es demostrar 100 mV de polarización, ya sea midiendo su formación al encender la PC o su decaimiento al apagarla." },
+                { question: "En tanques de almacenamiento de agua, ¿qué metal más noble a menudo conectado al acero requiere que se cumpla el criterio en toda la estructura?", options: ["Zinc", "Magnesio", "Cobre", "Plomo"], correctAnswer: 2, explanation: "El criterio de 100 mV para tanques de acero no es aplicable si hay celdas de corrosión causadas por metales más nobles como el cobre o el latón de las tuberías y accesorios." },
+                { question: "Según la norma ISO 15589-1, en suelos con bacterias reductoras de sulfato (SRB), el potencial polarizado debe ser más negativo que...", options: ["-850 mV vs CSE", "-1200 mV vs CSE", "-750 mV vs CSE", "-950 mV vs CSE"], correctAnswer: 3, explanation: "En presencia de SRB, que pueden causar corrosión severa, se requiere un criterio más conservador. La norma ISO especifica un potencial polarizado más negativo que -950 mV vs CSE." },
+                { question: "¿Qué es una prueba de 'E-log I'?", options: ["Una prueba de resistencia eléctrica", "Una prueba para medir la vida del ánodo", "Un método para determinar la corriente de protección requerida", "Una prueba de calidad del recubrimiento"], correctAnswer: 2, explanation: "Es una prueba donde se aplica corriente en incrementos y se grafica el potencial polarizado contra el logaritmo de la corriente. La curva resultante ayuda a determinar la corriente necesaria para la protección." },
+                { question: "En un gráfico de E-log I, la porción de línea recta a corrientes altas se conoce como...", options: ["La región de activación", "La pendiente de Tafel", "La curva de polarización", "El punto de corrosión"], correctAnswer: 1, explanation: "La pendiente de Tafel es la porción lineal del gráfico E-log I, que representa una región donde el potencial cambia logarítmicamente con la corriente." },
+                { question: "En una prueba E-log I, ¿cómo se determina la corriente de protección requerida (Icp)?", options: ["Es el primer punto de la curva", "Es el punto más alto de la curva", "Es la corriente en el punto donde la curva se desvía para formar la pendiente de Tafel", "Es el promedio de todas las corrientes"], correctAnswer: 2, explanation: "El punto de 'quiebre' en el gráfico, donde la polarización deja de ser lineal y comienza el comportamiento de Tafel, se interpreta como la corriente necesaria para mitigar la corrosión." },
+                { question: "Para tanques de almacenamiento de petróleo (API 651), ¿a qué norma de NACE se hace referencia para los criterios de PC externa?", options: ["RP0290 (Concreto)", "RP0169 (Tuberías)", "RP0575 (Recipientes internos)", "RP0196 (Tanques de agua)"], correctAnswer: 1, explanation: "La práctica recomendada por API 651 para la protección de fondos de tanques de petróleo se basa en los mismos criterios establecidos en NACE RP0169 para tuberías." },
+                { question: "El plomo es un metal anfótero. ¿Qué criterio de potencial se usa para cables con cubierta de plomo?", options: ["-850 mV vs CSE", "-550 mV vs CSE", "-700 mV vs CSE", "-1100 mV vs CSE"], correctAnswer: 2, explanation: "Para cables de plomo desnudos o con ciertas cubiertas, el criterio es un potencial más conservador de -700 mV vs CSE para evitar la corrosión alcalina por sobreprotección." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            answersContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === question.correctAnswer;
+            
+            // Disable all buttons after an answer is selected
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                // Highlight the correct answer
+                answersContainer.children[question.correctAnswer].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            startGame();
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
