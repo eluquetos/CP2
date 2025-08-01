@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Fuentes para Protección Catódica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-2xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Fuentes para Protección Catódica</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Principios y Componentes</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Funcionamiento del Rectificador</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Modos de Operación y Fuentes Alternativas</button>
+                <button onclick="selectSet(3)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 4: Troubleshooting y Pruebas</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Principios y Componentes
+            [
+                { question: "¿Cuál es el tipo de fuente de poder más común para sistemas de protección catódica de corriente impresa?", options: ["Generadores solares", "Generadores termoeléctricos (TEG)", "Transformador-Rectificador", "Baterías"], correctAnswer: 2, explanation: "El transformador-rectificador, comúnmente llamado solo 'rectificador', es la fuente de poder más utilizada porque convierte eficientemente la energía de la red eléctrica de CA a la CC necesaria." },
+                { question: "¿Cuál es la función principal de un rectificador en un sistema de PC?", options: ["Generar energía de la nada", "Convertir la energía de CA a CC", "Almacenar energía", "Medir el potencial de la estructura"], correctAnswer: 1, explanation: "Un rectificador toma la corriente alterna (CA) de la red eléctrica, ajusta su voltaje a través de un transformador y luego la convierte en corriente continua (CC) para ser usada en el sistema de PC." },
+                { question: "¿Cuáles son los tres componentes básicos de un rectificador?", options: ["Motor, generador, batería", "Panel solar, controlador, inversor", "Interruptor, transformador, elementos rectificadores", "Ánodo, cátodo, electrolito"], correctAnswer: 2, explanation: "Un rectificador consta fundamentalmente de un interruptor automático (circuit breaker) para protección, un transformador para ajustar el voltaje y elementos rectificadores (diodos) para convertir de CA a CC." },
+                { question: "¿Cuál es la función principal de un interruptor automático (circuit breaker) en un rectificador?", options: ["Aumentar el voltaje", "Convertir CA a CC", "Proteger los componentes de sobrecargas de corriente", "Medir la corriente de salida"], correctAnswer: 2, explanation: "El interruptor automático es un dispositivo de seguridad que protege los componentes internos del rectificador al interrumpir el circuito si detecta una sobrecarga de corriente o un cortocircuito." },
+                { question: "La función del transformador dentro de un rectificador es...", options: ["Rectificar la corriente", "Almacenar la corriente", "Ajustar (subir o bajar) el nivel de voltaje de CA", "Producir una onda de CC pura"], correctAnswer: 2, explanation: "El transformador se utiliza para 'transformar' el voltaje de entrada de CA a un nivel de voltaje de CA secundario más adecuado para los requisitos del sistema de PC, antes de que sea rectificado." },
+                { question: "¿Qué componente del rectificador es responsable de la conversión de CA a CC?", options: ["El transformador", "El interruptor automático", "Los elementos rectificadores (diodos)", "Los medidores"], correctAnswer: 2, explanation: "Los elementos rectificadores, que son diodos de selenio o silicio, son los que realizan la conversión de corriente alterna (CA) a corriente continua (CC)." },
+                { question: "¿Qué es un Generador Termoeléctrico (TEG)?", options: ["Un generador que funciona con viento", "Un dispositivo que convierte calor directamente en electricidad", "Un tipo especial de batería", "Un generador que funciona con energía solar"], correctAnswer: 1, explanation: "Un TEG utiliza el efecto Seebeck para convertir la energía térmica (generalmente de la quema de gas) directamente en energía eléctrica de CC, sin partes móviles. Es útil en lugares remotos sin acceso a la red eléctrica." },
+                { question: "En un sistema de energía solar para PC, ¿cuál es el propósito de las baterías?", options: ["Aumentar la eficiencia del panel", "Suministrar energía durante la noche o en días nublados", "Convertir CC a CA", "Proteger el panel de sobrecargas"], correctAnswer: 1, explanation: "Como los paneles solares solo generan energía con la luz del sol, se necesita un banco de baterías para almacenar energía y alimentar el sistema de PC durante los períodos sin sol." },
+                { question: "Al trabajar en un rectificador, ¿cuál es el primer paso de seguridad más importante?", options: ["Medir el voltaje de salida", "Limpiar la carcasa", "Apagar la fuente de poder de CA y aplicar bloqueo/etiquetado (lock out/tag out)", "Ajustar los taps"], correctAnswer: 2, explanation: "La seguridad es primordial. Antes de realizar cualquier trabajo interno en un rectificador, la alimentación de CA debe ser desconectada y asegurada mediante un procedimiento de bloqueo y etiquetado para evitar descargas eléctricas." },
+                { question: "Una conexión de polaridad incorrecta en un rectificador (estructura al positivo, ánodos al negativo) causará...", options: ["Que la estructura se proteja más rápido", "Una severa y rápida corrosión de la estructura", "Que el rectificador no encienda", "Que se funda el interruptor"], correctAnswer: 1, explanation: "Conectar la polaridad de forma inversa es catastrófico. Convierte la estructura que se quiere proteger en un ánodo, acelerando masivamente su corrosión en lugar de detenerla." }
+            ],
+            // Set 2: Funcionamiento del Rectificador
+            [
+                { question: "¿Qué tipo de interruptor automático (circuit breaker) es más adecuado para rectificadores de PC debido a su rápida respuesta a sobrecargas?", options: ["Térmico", "Magnético", "Térmico-magnético", "Manual"], correctAnswer: 1, explanation: "El interruptor magnético reacciona instantáneamente a sobrecargas de corriente, lo que lo hace el más adecuado para proteger los sensibles componentes electrónicos de un rectificador." },
+                { question: "En un transformador, si el bobinado primario tiene 400 vueltas y el secundario 100, y el voltaje de entrada es 120 VCA, ¿cuál es el voltaje de salida?", options: ["480 VCA", "120 VCA", "30 VCA", "60 VCA"], correctAnswer: 2, explanation: "La relación de voltaje es igual a la relación de vueltas. (Vsec / 120V) = (100 / 400). Por lo tanto, Vsec = 120 * (100/400) = 30 VCA. Es un transformador 'reductor'." },
+                { question: "¿Cómo se ajusta el voltaje de salida en un rectificador de voltaje constante estándar?", options: ["Cambiando los diodos", "Ajustando un potenciómetro", "Moviendo las barras de conexión (taps) en el bobinado secundario del transformador", "Cambiando el interruptor automático"], correctAnswer: 2, explanation: "El ajuste se realiza cambiando los 'taps', que son puntos de conexión en el bobinado secundario. Mover los taps cambia el número de vueltas utilizadas y, por lo tanto, el voltaje de salida." },
+                { question: "Un puente rectificador de onda completa monofásico utiliza ¿cuántos diodos?", options: ["1", "2", "4", "6"], correctAnswer: 2, explanation: "El diseño estándar de puente de onda completa para una fuente monofásica requiere 4 diodos para rectificar ambas mitades del ciclo de la onda de CA." },
+                { question: "Un puente rectificador de onda completa trifásico utiliza ¿cuántos diodos?", options: ["2", "4", "6", "8"], correctAnswer: 2, explanation: "Para rectificar completamente las tres fases de una fuente de CA trifásica, se utiliza un puente con 6 diodos." },
+                { question: "¿Cuál es la principal ventaja de los diodos de silicio sobre los de selenio?", options: ["Son más grandes", "Son auto-reparables", "Son más eficientes y no envejecen", "Toleran mejor las sobrecargas"], correctAnswer: 2, explanation: "Los diodos de silicio son más eficientes en la conversión de energía y no sufren el 'envejecimiento' (pérdida de rendimiento con el tiempo) que afecta a los stacks de selenio." },
+                { question: "¿Cuál es la principal desventaja de los diodos de silicio?", options: ["Son menos eficientes", "Son muy grandes", "Son muy sensibles a sobrecargas de corriente y pueden destruirse rápidamente", "Se calientan menos"], correctAnswer: 2, explanation: "A diferencia de los de selenio que pueden 'auto-repararse', los diodos de silicio son muy susceptibles a daños por picos de corriente (como los causados por rayos) y fallan de forma completa e instantánea." },
+                { question: "¿Qué es un SCR (Rectificador Controlado de Silicio)?", options: ["Un tipo de transformador", "Un diodo que solo conduce cuando recibe un pulso en su 'compuerta' (gate)", "Un fusible especial", "Un medidor de voltaje"], correctAnswer: 1, explanation: "Un SCR es como un interruptor electrónico. Es un diodo que no conducirá corriente hasta que se le aplique un pequeño pulso de voltaje a su terminal de 'compuerta', permitiendo un control preciso sobre la rectificación." },
+                { question: "¿Cómo controla un SCR el voltaje de salida de CC?", options: ["Cambiando los taps del transformador", "Retrasando el pulso de la compuerta para cambiar el 'ángulo de conducción'", "Aumentando la temperatura", "Filtrando la señal"], correctAnswer: 1, explanation: "Al controlar exactamente cuándo se envía el pulso a la compuerta, un SCR puede 'recortar' parte de la onda de CA, permitiendo que solo una porción de ella pase. Esto permite un ajuste continuo y preciso del voltaje de CC de salida." },
+                { question: "La eficiencia teórica máxima de un rectificador trifásico de onda completa (96.5%) es mayor que la de uno monofásico (81%) porque...", options: ["Usa menos diodos", "La onda de entrada trifásica es más constante y tiene menos 'valles'", "Los transformadores trifásicos son más pequeños", "La CA trifásica tiene un voltaje más alto"], correctAnswer: 1, explanation: "La energía de una fuente trifásica es más continua que la de una monofásica. La onda de CC resultante tiene un 'rizado' (ripple) mucho menor, lo que la hace más eficiente y cercana a una CC pura." }
+            ],
+            // Set 3: Modos de Operación y Fuentes Alternativas
+            [
+                { question: "Un rectificador en modo 'Voltaje Constante'...", options: ["Mantiene la corriente fija sin importar la resistencia", "Mantiene el potencial de la estructura fijo", "Mantiene un voltaje de salida fijo ajustado por los taps", "Se apaga si la resistencia cambia"], correctAnswer: 2, explanation: "En este modo, el voltaje de salida es fijado manualmente con los taps. La corriente de salida variará si la resistencia del circuito (ej. humedad del suelo) cambia, según la Ley de Ohm (I = V/R)." },
+                { question: "Un rectificador en modo 'Corriente Constante'...", options: ["Ajusta su voltaje de salida para mantener una corriente fija", "Mantiene el voltaje fijo", "Nunca cambia su salida", "Necesita un electrodo de referencia"], correctAnswer: 0, explanation: "Este tipo de rectificador ajustará automáticamente su voltaje de salida hacia arriba o hacia abajo para asegurar que la corriente de salida se mantenga en el valor preestablecido, sin importar los cambios en la resistencia del circuito." },
+                { question: "Un rectificador en modo 'Potencial Constante' necesita un componente externo adicional para funcionar. ¿Cuál es?", options: ["Un amperímetro", "Un transformador más grande", "Un electrodo de referencia permanente", "Un generador de respaldo"], correctAnswer: 2, explanation: "Este modo requiere un electrodo de referencia estable instalado cerca de la estructura. El rectificador mide el potencial estructura-electrolito y ajusta su salida de corriente para mantener ese potencial en el valor deseado." },
+                { question: "¿En qué situación es más útil un rectificador de potencial constante?", options: ["Donde la resistencia del circuito es siempre estable", "Donde las condiciones del electrolito varían significativamente", "En sistemas galvánicos", "Para pruebas a corto plazo"], correctAnswer: 1, explanation: "Es ideal para ambientes donde la resistividad cambia (ej. por estaciones, mareas), ya que ajusta automáticamente la corriente para mantener el nivel de protección deseado (potencial) en todo momento." },
+                { question: "¿Qué es el efecto Seebeck, principio de funcionamiento de los Generadores Termoeléctricos (TEG)?", options: ["La conversión de luz en electricidad", "La generación de voltaje por una diferencia de temperatura en una unión de dos metales distintos", "La división de átomos para generar energía", "La generación de viento por calor"], correctAnswer: 1, explanation: "El efecto Seebeck describe cómo una diferencia de temperatura aplicada a través de una unión de dos materiales conductores diferentes (o semiconductores) produce una diferencia de voltaje." },
+                { question: "Para que un TEG funcione eficientemente, la temperatura en el lado caliente es de aprox. 535°C, mientras que el lado frío se mantiene a...", options: ["La misma temperatura", "0°C", "Aprox. 165°C", "Temperatura ambiente"], correctAnswer: 2, explanation: "La potencia generada por un TEG es una función directa de la diferencia de temperatura entre el lado caliente y el lado frío. Mantener el lado frío refrigerado es crucial para su funcionamiento." },
+                { question: "¿Qué son las células fotovoltaicas?", options: ["Células que almacenan combustible", "Dispositivos semiconductores que convierten la energía solar directamente en electricidad", "Un tipo de fusible", "Pequeños generadores de viento"], correctAnswer: 1, explanation: "Las células fotovoltaicas son el componente básico de un panel solar. Están hechas de materiales semiconductores (generalmente silicio) que liberan electrones cuando son expuestos a la luz." },
+                { question: "¿Qué componente de un sistema solar de PC evita la sobrecarga de las baterías?", options: ["El panel solar", "Las propias baterías", "El regulador de carga", "El inversor"], correctAnswer: 2, explanation: "El regulador o controlador de carga monitorea el estado de la batería. Permite que la corriente de los paneles cargue la batería cuando es necesario y corta la carga cuando está llena para evitar daños por sobrecarga." },
+                { question: "Los generadores eólicos (de viento) para PC requieren una velocidad de viento mínima para empezar a producir corriente, generalmente alrededor de...", options: ["1 km/h", "50 km/h", "100 km/h", "16 km/h (10 mph)"], correctAnswer: 3, explanation: "Los generadores eólicos necesitan una velocidad de viento mínima para vencer la inercia y empezar a generar una cantidad útil de energía, típicamente alrededor de 16 km/h." },
+                { question: "¿Qué es una celda de combustible (fuel cell)?", options: ["Un tipo de motor de combustión", "Una batería que se recarga con combustible", "Un dispositivo electroquímico que convierte la energía química de un combustible (como hidrógeno) en electricidad", "Un contenedor para almacenar combustible"], correctAnswer: 2, explanation: "Una celda de combustible genera electricidad a través de una reacción electroquímica entre un combustible y un agente oxidante, de forma similar a una batería, pero se reposta con combustible en lugar de recargarse eléctricamente." }
+            ],
+            // Set 4: Troubleshooting y Pruebas
+            [
+                { question: "Si al revisar un rectificador, los medidores de voltaje y corriente marcan CERO, ¿cuál es la primera causa probable a investigar?", options: ["Falla en los ánodos", "No hay energía de entrada de CA o el interruptor está disparado", "Un cortocircuito en la estructura", "Los medidores están dañados"], correctAnswer: 1, explanation: "La causa más simple y común para una salida de cero es la falta de alimentación de CA. Se debe verificar si el interruptor principal está disparado o si hay un corte de energía externo." },
+                { question: "Si el interruptor (breaker) de un rectificador se dispara repetidamente, ¿qué indica esto?", options: ["Una circuito abierto", "Una sobrecarga de corriente o un cortocircuito", "Bajo voltaje de entrada", "Falla de los ánodos"], correctAnswer: 1, explanation: "El disparo del interruptor es un mecanismo de protección contra una corriente excesiva. Esto puede ser por una sobrecarga temporal (rayo) o un cortocircuito permanente en el sistema." },
+                { question: "Para determinar si un cortocircuito es interno o externo al rectificador, ¿qué paso se debe seguir?", options: ["Aumentar el voltaje", "Desconectar los cables de salida de CC y rearmar el interruptor", "Medir la resistencia del suelo", "Reemplazar los fusibles"], correctAnswer: 1, explanation: "Al desconectar la carga externa (cables de CC), si el interruptor ya no se dispara, el corto está en el circuito externo (ánodos, cables). Si se sigue disparando, el corto es interno al rectificador." },
+                { question: "Si el voltaje de salida del rectificador es normal, pero la corriente es CERO, ¿cuál es la causa más probable?", options: ["Un cortocircuito", "Un circuito de salida abierto", "Falla del transformador", "Bajo voltaje de CA"], correctAnswer: 1, explanation: "Tener voltaje pero no corriente indica una interrupción en el circuito de salida. Las causas comunes son un fusible de salida quemado, un cable roto o una mala conexión en el circuito del ánodo o de la estructura." },
+                { question: "Si la corriente de salida de un rectificador disminuye significativamente pero el voltaje se mantiene, ¿qué ha sucedido?", options: ["Un cortocircuito", "La resistencia del circuito ha aumentado", "La resistencia del circuito ha disminuido", "Falla del rectificador"], correctAnswer: 1, explanation: "Según la Ley de Ohm (I = V/R), si el voltaje (V) es constante y la corriente (I) baja, es porque la resistencia (R) del circuito ha aumentado. Esto puede ser por ánodos deteriorados, suelo seco, etc." },
+                { question: "Si la salida de un rectificador monofásico cae aproximadamente a la mitad de su valor normal, ¿cuál es una causa común?", options: ["Falla de un solo diodo, causando operación en 'media onda'", "Sobrecarga de CA", "Bajo nivel de aceite", "Un fusible quemado"], correctAnswer: 0, explanation: "En un puente de 4 diodos, si uno falla y se abre, el rectificador pasa de rectificar la onda completa a solo la mitad, lo que reduce la salida de CC a aproximadamente la mitad." },
+                { question: "¿Cómo se calcula la eficiencia de un rectificador?", options: ["(Potencia de CA / Potencia de CC) * 100", "(Potencia de CC / Potencia de CA) * 100", "Voltaje de CC / Voltaje de CA", "Corriente de CC / Corriente de CA"], correctAnswer: 1, explanation: "La eficiencia es la relación entre la potencia útil que sale (Potencia CC = Vcc x Icc) y la potencia que entra (Potencia CA, medida con un vatímetro), expresada como un porcentaje." },
+                { question: "Para probar un diodo con un multímetro, ¿qué condición debe cumplirse?", options: ["El rectificador debe estar encendido", "El diodo debe estar caliente", "Al menos una de las patas del diodo debe estar desconectada del circuito", "Se debe aplicar un alto voltaje"], correctAnswer: 2, explanation: "No se puede probar un diodo de forma fiable mientras está conectado en el circuito, ya que otros componentes pueden interferir con la lectura. Se debe desconectar al menos una pata para aislarlo." },
+                { question: "Un diodo en buen estado, al ser probado con un multímetro en modo diodo, debe mostrar...", options: ["Un valor de voltaje bajo en ambas direcciones", "'OL' (circuito abierto) en ambas direcciones", "Un valor de voltaje bajo en polarización directa y 'OL' en polarización inversa", "Cero voltios en ambas direcciones"], correctAnswer: 2, explanation: "Un diodo funcional permite el paso de corriente en una dirección (polarización directa, mostrando un pequeño voltaje) y la bloquea en la otra (polarización inversa, mostrando circuito abierto u 'OL')." },
+                { question: "Antes de ajustar los taps de un rectificador, ¿qué acción es MANDATORIA?", options: ["Medir la corriente de salida", "Apagar el rectificador usando el interruptor automático", "Verificar la temperatura", "Limpiar los taps"], correctAnswer: 1, explanation: "Cambiar los taps con el rectificador encendido es extremadamente peligroso y puede causar un arco eléctrico severo. Siempre se debe apagar la unidad desde el interruptor principal antes de tocar los taps." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            answersContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === question.correctAnswer;
+            
+            // Disable all buttons after an answer is selected
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                // Highlight the correct answer
+                answersContainer.children[question.correctAnswer].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            startGame();
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
