@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Sistemas de Protección Catódica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-2xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Sistemas de Protección Catódica</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Tipos de Sistemas</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Componentes Galvánicos</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Componentes de Corriente Impresa</button>
+                <button onclick="selectSet(3)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 4: Configuraciones y Aplicaciones</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Tipos de Sistemas
+            [
+                { question: "¿Cuáles son los dos tipos generales de sistemas de protección catódica?", options: ["Activo y Pasivo", "Interno y Externo", "Galvánico y de Corriente Impresa", "Temporal y Permanente"], correctAnswer: 2, explanation: "Los dos métodos fundamentales para aplicar protección catódica son mediante ánodos galvánicos (o de sacrificio) y mediante un sistema de corriente impresa que utiliza una fuente de poder externa." },
+                { question: "¿En qué principio se basan los sistemas de protección catódica galvánica?", options: ["En usar una fuente de poder externa", "En que un metal más activo se corroe para proteger a uno menos activo", "En recubrir la estructura con pintura", "En cambiar la temperatura del electrolito"], correctAnswer: 1, explanation: "Un sistema galvánico funciona conectando un metal más activo (el ánodo) a la estructura (menos activa). El ánodo se 'sacrifica', corroyéndose en lugar de la estructura que se desea proteger." },
+                { question: "¿Cuáles son los tres metales más comunes usados como ánodos galvánicos para proteger el acero?", options: ["Cobre, Oro, Plata", "Hierro, Níquel, Plomo", "Magnesio, Zinc, Aluminio", "Titanio, Platino, Grafito"], correctAnswer: 2, explanation: "El magnesio, el zinc y el aluminio son los tres metales más utilizados como ánodos de sacrificio porque son significativamente más activos (más anódicos) que el acero en la serie galvánica." },
+                { question: "¿Qué componente fundamental diferencia a un sistema de corriente impresa de uno galvánico?", options: ["El tipo de estructura", "El electrolito", "El ánodo", "Una fuente de poder externa (rectificador)"], correctAnswer: 3, explanation: "Mientras que un sistema galvánico genera su propia corriente por la diferencia de potencial natural, un sistema de corriente impresa requiere una fuente de poder externa (como un rectificador) para 'imprimir' o forzar la corriente desde el ánodo hacia la estructura." },
+                { question: "En un sistema de corriente impresa, ¿a qué terminal de la fuente de poder se conecta el ánodo?", options: ["Al terminal negativo", "Al terminal positivo", "A ambos terminales", "A tierra"], correctAnswer: 1, explanation: "Es crucial conectar el ánodo al terminal positivo (+) de la fuente de poder y la estructura a proteger al terminal negativo (-). Una conexión incorrecta aceleraría la corrosión de la estructura." },
+                { question: "¿Por qué los ánodos galvánicos son a menudo llamados 'ánodos de sacrificio'?", options: ["Porque son muy caros", "Porque se sacrifican o consumen para proteger la estructura", "Porque son difíciles de instalar", "Porque no funcionan bien"], correctAnswer: 1, explanation: "Se les llama 'de sacrificio' porque el ánodo, al ser más activo, se corroe (se consume) deliberadamente para proteger la estructura principal (cátodo)." },
+                { question: "¿Cuál es una de las principales ventajas de usar un sistema de corriente impresa?", options: ["No requiere mantenimiento", "Puede suministrar grandes cantidades de corriente", "Es más simple de diseñar", "No necesita ánodos"], correctAnswer: 1, explanation: "Los sistemas de corriente impresa son ideales para proteger estructuras grandes, desnudas o mal recubiertas, ya que pueden proporcionar niveles de corriente mucho más altos que los sistemas galvánicos." },
+                { question: "¿Cuál es una de las principales ventajas de usar un sistema galvánico?", options: ["Su alto voltaje de salida", "Su simplicidad y no requerir una fuente de poder externa", "Su larga vida útil en cualquier ambiente", "Su bajo costo inicial siempre"], correctAnswer: 1, explanation: "Los sistemas galvánicos son simples, no necesitan una fuente de poder externa y es menos probable que causen problemas de interferencia en áreas congestionadas." },
+                { question: "¿Qué sucede si se conecta incorrectamente un sistema de corriente impresa (estructura al positivo, ánodo al negativo)?", options: ["El sistema no enciende", "No pasa nada", "La estructura se corroe a una velocidad muy acelerada", "El ánodo se protege"], correctAnswer: 2, explanation: "Invertir las conexiones convertiría a la estructura en el ánodo de la celda de corriente impresa, causando una corrosión severa y rápida en lugar de protección." },
+                { question: "Los ánodos de corriente impresa se fabrican con materiales que...", options: ["Se consumen muy rápidamente", "Son más activos que el acero", "Tienen una baja tasa de consumo", "Son muy económicos"], correctAnswer: 2, explanation: "A diferencia de los ánodos de sacrificio, los ánodos de corriente impresa se eligen por su muy baja tasa de consumo (ej. grafito, MMO, platino), ya que no protegen por ser galvánicamente activos, sino por ser un camino para la corriente de la fuente de poder." }
+            ],
+            // Set 2: Componentes Galvánicos
+            [
+                { question: "¿Qué aleación de magnesio proporciona un mayor voltaje de impulso?", options: ["La aleación estándar", "La aleación de alto potencial (-1.75V)", "La aleación de bajo potencial (-1.55V)", "Todas tienen el mismo voltaje"], correctAnswer: 1, explanation: "La aleación de magnesio de 'alto potencial' tiene un potencial nominal de -1.75V vs CSE, lo que proporciona una mayor diferencia de potencial (voltaje) para impulsar la corriente, útil en electrolitos de mayor resistividad." },
+                { question: "¿En qué tipo de ambiente se utiliza normalmente el magnesio como ánodo galvánico?", options: ["Solo en agua de mar", "En suelos y agua dulce", "En ambientes de alta temperatura", "No se usa en la práctica"], correctAnswer: 1, explanation: "El magnesio es más efectivo y comúnmente utilizado para proteger estructuras en suelos y en ambientes de agua dulce debido a su alto potencial de conducción." },
+                { question: "¿A qué temperatura el zinc puede volverse pasivo e incluso más noble que el acero?", options: ["Por encima de 0°C", "Por encima de 54°C (130°F)", "Por debajo de 10°C", "La temperatura no le afecta"], correctAnswer: 1, explanation: "A temperaturas superiores a 54°C (130°F), especialmente con carbonatos presentes, el zinc puede formar una película pasiva que invierte su polaridad, haciendo que la estructura de acero se corroa en lugar de ser protegida." },
+                { question: "¿En qué aplicación son preferidos los ánodos de aluminio?", options: ["En suelos de alta resistividad", "En agua dulce", "En aplicaciones de agua de mar", "En concreto"], correctAnswer: 2, explanation: "Los ánodos de aleación de aluminio son muy eficientes y tienen una baja tasa de consumo, lo que los hace la opción preferida para aplicaciones marinas como plataformas offshore y cascos de barcos." },
+                { question: "¿Qué es la 'eficiencia del ánodo' galvánico?", options: ["El porcentaje de metal consumido que produce corriente útil de protección", "La velocidad a la que se instala", "El costo total del ánodo", "El voltaje que produce"], correctAnswer: 0, explanation: "La eficiencia es la relación entre el metal que se consume para generar la corriente de protección catódica útil y el total de metal consumido (que incluye la auto-corrosión)." },
+                { question: "¿Cuál de los tres ánodos galvánicos comunes (Mg, Zn, Al) tiene generalmente la menor eficiencia (alrededor del 50%)?", options: ["Zinc", "Aluminio", "Magnesio", "Todos tienen la misma eficiencia"], correctAnswer: 2, explanation: "El magnesio es muy activo y tiene una tasa de auto-corrosión más alta, lo que resulta en una eficiencia más baja, típicamente alrededor del 50%. El Zinc, en cambio, tiene una eficiencia de alrededor del 90%." },
+                { question: "¿Cuál es el propósito del 'backfill' o relleno preparado que rodea a los ánodos de magnesio y zinc en el suelo?", options: ["Aislar el ánodo eléctricamente", "Aumentar la resistividad alrededor del ánodo", "Prevenir la pasivación y proporcionar un entorno de baja resistividad", "Sujetar el ánodo mecánicamente"], correctAnswer: 2, explanation: "El backfill especial mantiene el ánodo activo (previene la pasivación), reduce la resistencia ánodo-tierra para mejorar la salida de corriente y asegura un consumo uniforme del ánodo." },
+                { question: "¿Cuál es la composición más común del backfill para ánodos galvánicos?", options: ["Arena y grava", "Solo arcilla bentonita", "75% yeso hidratado, 20% bentonita, 5% sulfato de sodio", "Carbón de coque"], correctAnswer: 2, explanation: "Esta mezcla específica (75% yeso, 20% bentonita, 5% sulfato de sodio) está diseñada para absorber humedad (bentonita), mantener un ambiente químico favorable (yeso) y reducir la resistividad (sulfato de sodio)." },
+                { question: "¿En qué situación es ideal usar ánodos galvánicos?", options: ["Para estructuras muy grandes y desnudas", "En electrolitos de muy alta resistividad", "Cuando se requiere una cantidad de corriente relativamente pequeña", "Cuando se necesita un alto voltaje"], correctAnswer: 2, explanation: "Los sistemas galvánicos son más adecuados y económicos cuando los requerimientos de corriente son bajos, como en estructuras bien recubiertas o en electrolitos de baja resistividad." },
+                { question: "¿Cómo se conectan comúnmente los ánodos galvánicos a una tubería enterrada?", options: ["Simplemente enterrándolos cerca", "Mediante un cable conectado por soldadura exotérmica a la tubería", "Con cinta adhesiva", "No se conectan directamente"], correctAnswer: 1, explanation: "Se utiliza un cable aislado para conectar el ánodo a la estructura. La conexión a la estructura se realiza preferentemente con una soldadura exotérmica (thermite weld) para asegurar una conexión eléctrica confiable y de baja resistencia." }
+            ],
+            // Set 3: Componentes de Corriente Impresa
+            [
+                { question: "¿Cuál es una característica clave de los ánodos de Hierro de Alto Silicio (HSCI)?", options: ["Son muy flexibles", "Son muy frágiles y resistentes químicamente", "Se consumen muy rápido", "Solo se usan en agua dulce"], correctAnswer: 1, explanation: "Los ánodos de HSCI son aleaciones muy duras y resistentes a la corrosión, pero también son muy frágiles y deben manipularse con cuidado para evitar que se rompan." },
+                { question: "Los ánodos de Óxido de Metal Mixto (MMO) consisten en óxidos de tierras raras horneados sobre un sustrato de...", options: ["Cobre", "Acero", "Plomo", "Titanio"], correctAnswer: 3, explanation: "Los ánodos MMO utilizan titanio como sustrato debido a su capacidad para formar una película de óxido estable y no conductora, sobre la cual se aplica el recubrimiento catalítico de óxido mixto que es el que descarga la corriente." },
+                { question: "¿Cuál de los siguientes ánodos de corriente impresa tiene la tasa de consumo más baja (del orden de miligramos/Amper-año)?", options: ["Grafito", "Hierro de Alto Silicio (HSCI)", "Óxido de Metal Mixto (MMO) y Platinizados", "Hierro de desecho"], correctAnswer: 2, explanation: "Los ánodos MMO y los platinizados son conocidos como 'dimensionalmente estables' porque tienen tasas de consumo extremadamente bajas, lo que les da una vida útil muy larga." },
+                { question: "En un sistema de corriente impresa subterráneo, ¿cuál es el propósito principal del relleno de carbón de coque?", options: ["Aislar el ánodo", "Aumentar la resistencia del ánodo", "Reducir la resistencia ánodo-tierra y extender la vida del ánodo", "Filtrar el agua"], correctAnswer: 2, explanation: "El carbón de coque reduce la resistencia efectiva del ánodo al aumentar su área de contacto con el suelo y, al ser consumido preferentemente, extiende la vida útil del ánodo primario." },
+                { question: "¿Qué tipo de aislamiento de cable, como HMWPE, es crucial en los sistemas de corriente impresa?", options: ["Para que el cable sea más flexible", "Para evitar la corrosión rápida del cable del ánodo", "Para cambiar el color del cable", "No es necesario el aislamiento"], correctAnswer: 1, explanation: "En un sistema de corriente impresa, cualquier metal expuesto en el lado positivo (circuito del ánodo) se corroerá rápidamente. Por lo tanto, el cable del ánodo debe tener un aislamiento dieléctrico de alta integridad como el HMWPE para evitar fallas." },
+                { question: "¿Qué material se usa a menudo como ánodo de corriente impresa en agua de mar pero no es recomendable bajo tierra?", options: ["Grafito", "Hierro de Alto Silicio (HSCI)", "Ánodos platinizados", "Hierro de desecho"], correctAnswer: 2, explanation: "Los ánodos platinizados (platino sobre titanio o niobio) son muy efectivos en agua, pero no se recomiendan para entierro directo en el suelo sin un relleno de carbón adecuado, ya que el ambiente del suelo puede dañar la delgada capa de platino." },
+                { question: "Para encapsular empalmes de cables en sistemas de PC, se requiere...", options: ["Cinta aislante común", "Una encapsulación total con resina epoxi o manguitos termocontráctiles especiales", "Dejar el empalme al aire", "Pintura normal"], correctAnswer: 1, explanation: "Los empalmes, especialmente en el circuito del ánodo, son puntos críticos de falla. Deben estar completamente sellados contra la humedad utilizando kits de empalme diseñados para protección catódica para prevenir la corrosión." },
+                { question: "¿Qué tipo de ánodo de corriente impresa se parece a un cable y tiene una clasificación de corriente máxima por metro?", options: ["Polímero conductivo", "Grafito", "Magnetita", "Plomo"], correctAnswer: 0, explanation: "Los ánodos de polímero conductivo son flexibles, se asemejan a un cable y se instalan de forma continua. Su salida de corriente está limitada y se especifica en miliamperios por metro o pie." },
+                { question: "El uso de chatarra de hierro o acero como ánodo de corriente impresa es posible, pero su principal desventaja es...", options: ["Su baja conductividad", "Su alta tasa de consumo (15-20 lb/A-año)", "Su alto costo", "Su resistencia a la corrosión"], correctAnswer: 1, explanation: "El hierro se consume a una tasa muy alta (alrededor de 9 kg/A-año), lo que significa que los lechos anódicos de chatarra tienen una vida útil corta y necesitan ser reemplazados con frecuencia." },
+                { question: "Los ánodos de MMO o platinizados en forma de malla o cinta son comúnmente usados para proteger...", options: ["Tuberías en agua de mar", "Estructuras de concreto reforzado", "Tanques de almacenamiento subterráneos", "Cascos de barcos"], correctAnswer: 1, explanation: "La forma de malla o cinta de estos ánodos permite una distribución uniforme de la corriente sobre grandes superficies, lo que los hace ideales para la protección catódica del acero de refuerzo en estructuras de concreto como puentes y edificios." }
+            ],
+            // Set 4: Configuraciones y Aplicaciones
+            [
+                { question: "¿Qué describe una configuración de ánodos 'distribuida'?", options: ["Un solo ánodo muy lejos de la estructura", "Ánodos ubicados a intervalos cercanos a lo largo de la estructura", "Ánodos instalados verticalmente", "Ánodos que no están conectados"], correctAnswer: 1, explanation: "Un sistema distribuido utiliza múltiples ánodos colocados cerca de la estructura para distribuir la corriente de manera uniforme. Es útil para estructuras desnudas o en áreas congestionadas." },
+                { question: "¿Qué describe una configuración de ánodos 'remota'?", options: ["Ánodos colocados muy cerca de la estructura", "Ánodos colocados en una ubicación eléctricamente remota de la estructura", "Ánodos apagados", "Muchos ánodos pequeños"], correctAnswer: 1, explanation: "En una configuración remota, el lecho anódico se coloca lo suficientemente lejos para que la estructura se comporte como un punto único, logrando una distribución de corriente más amplia. Es ideal para estructuras bien recubiertas y aisladas." },
+                { question: "¿Qué es la 'tierra remota' en el contexto de la PC?", options: ["Un tipo de suelo especial", "El punto donde el gradiente de voltaje del ánodo ya no cambia con la distancia", "La conexión a tierra de la estructura", "Un ánodo muy lejano"], correctAnswer: 1, explanation: "La tierra remota es un concepto teórico que representa un punto tan alejado de un electrodo que su potencial eléctrico no se ve afectado por la descarga de corriente de dicho electrodo." },
+                { question: "Un 'lecho anódico profundo' (deep anode groundbed) es un ejemplo de configuración...", options: ["Distribuida", "Cercana", "Remota", "Galvánica"], correctAnswer: 2, explanation: "Los lechos anódicos profundos, instalados a 50 pies o más de profundidad, se utilizan para lograr una configuración eléctricamente remota, lo que permite una distribución de corriente muy amplia sobre una gran área." },
+                { question: "¿En qué situación se prefiere un sistema de ánodos distribuidos?", options: ["En una tubería nueva y bien recubierta", "En una tubería desnuda o con mal recubrimiento", "Cuando hay mucho espacio disponible", "Para proteger una sola estructura aislada"], correctAnswer: 1, explanation: "Las estructuras desnudas o mal recubiertas requieren que la corriente se distribuya de manera muy uniforme, lo cual se logra mejor con un sistema de ánodos distribuidos cerca de la estructura." },
+                { question: "Para proteger el acero de refuerzo en un puente, ¿qué configuración de ánodo se requiere?", options: ["Un solo ánodo remoto", "Un lecho anódico profundo", "Una configuración de ánodos distribuida sobre la superficie del concreto", "Ánodos galvánicos en el suelo"], correctAnswer: 2, explanation: "Debido a la naturaleza de la estructura, se necesita una configuración distribuida (como malla de MMO o recubrimiento conductivo) para aplicar la corriente de manera uniforme sobre toda la superficie del concreto a proteger." },
+                { question: "¿Cuál es una ventaja de instalar ánodos verticalmente en lugar de horizontalmente?", options: ["Siempre tienen menor resistencia", "Requieren menos espacio y menos excavación", "Son más fáciles de conectar", "Duran más"], correctAnswer: 1, explanation: "Los lechos verticales generalmente requieren menos área de superficie y la instalación puede ser más sencilla (perforando un agujero en lugar de cavar una zanja), especialmente si el espacio es limitado." },
+                { question: "Los ánodos de cinta de magnesio o zinc son un ejemplo de un sistema...", options: ["De corriente impresa remoto", "Galvánico distribuido", "De corriente impresa profundo", "Galvánico remoto"], correctAnswer: 1, explanation: "La forma de cinta permite que el ánodo galvánico se instale continuamente a lo largo de la estructura, proporcionando una excelente distribución de corriente de forma distribuida." },
+                { question: "¿Qué preocupación ambiental principal existe con los lechos anódicos profundos?", options: ["El ruido durante la perforación", "La posible contaminación cruzada de acuíferos de agua", "El uso de electricidad", "El calor que generan"], correctAnswer: 1, explanation: "La perforación de un pozo profundo puede atravesar múltiples acuíferos. Se deben tomar precauciones, como el uso de sellos de arcilla, para evitar que contaminantes de una capa se filtren a otra." },
+                { question: "En áreas urbanas congestionadas con muchas estructuras metálicas subterráneas, ¿qué tipo de sistema de PC se prefiere para minimizar la interferencia?", options: ["Un sistema de corriente impresa de alto voltaje", "Un lecho anódico profundo y remoto", "Un sistema de ánodos galvánicos distribuidos", "Ninguno, la PC no es posible"], correctAnswer: 2, explanation: "Los sistemas galvánicos operan a voltajes mucho más bajos y sus ánodos suelen estar cerca de la estructura a proteger (distribuidos). Esto limita el alcance de su campo eléctrico, reduciendo la probabilidad de causar problemas de interferencia a estructuras vecinas." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            answersContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === question.correctAnswer;
+            
+            // Disable all buttons after an answer is selected
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                // Highlight the correct answer
+                answersContainer.children[question.correctAnswer].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            startGame();
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
