@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Monitoreo y Registros</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-3xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Monitoreo y Registros</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Objetivos y Planificación</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Métodos de Sondeo</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Frecuencia y Registros</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Objetivos y Planificación
+            [
+                { question: "¿Cuál es el objetivo principal de un programa de monitoreo de protección catódica?", options: ["Cumplir con un requisito burocrático", "Asegurar que el sistema de PC opere continuamente a los niveles previstos", "Reducir los costos de electricidad", "Encontrar nuevas tuberías"], correctAnswer: 1, explanation: "El monitoreo busca verificar que el sistema de PC esté funcionando correctamente y manteniendo los niveles de protección para los cuales fue diseñado, asegurando así la prevención de la corrosión." },
+                { question: "¿Cuál de los siguientes NO es un objetivo principal de un sistema de PC?", options: ["Proveer suficiente corriente a la estructura", "Asegurar que el sistema de PC opere continuamente", "Aumentar la resistividad del suelo", "Distribuir la corriente para cumplir los criterios"], correctAnswer: 2, explanation: "Un sistema de PC no modifica la resistividad del suelo. Sus objetivos son suministrar y distribuir corriente de manera efectiva y continua para proteger la estructura." },
+                { question: "Antes de iniciar un sondeo de campo, ¿qué es lo primero que se debe hacer?", options: ["Comprar equipo nuevo", "Ensamblar y estudiar toda la información disponible sobre la estructura", "Realizar excavaciones de prueba", "Contactar a los medios de comunicación"], correctAnswer: 1, explanation: "La planificación previa es crucial. Recopilar mapas, registros de fugas, detalles de construcción, y datos de PC anteriores permite planificar un sondeo eficiente y entender los resultados." },
+                { question: "¿Por qué es importante conocer el historial de fugas de una estructura existente?", options: ["Para calcular la pérdida de producto", "Puede indicar las áreas con problemas de corrosión más serios", "Para justificar el presupuesto", "No es importante"], correctAnswer: 1, explanation: "La ubicación y frecuencia de fugas pasadas son un indicador directo de las 'zonas calientes' de corrosión, ayudando a enfocar los esfuerzos del sondeo en las áreas más críticas." },
+                { question: "¿Por qué es relevante saber si una tubería corre paralela a líneas de alta tensión?", options: ["Porque indica la dirección del flujo del producto", "Para determinar si pueden existir voltajes de CA inducidos peligrosos", "Porque las torres de alta tensión son buenos puntos de referencia", "No es relevante para la corrosión"], correctAnswer: 1, explanation: "El paralelismo con líneas de alta tensión puede inducir voltajes de CA en la tubería, lo que representa un riesgo de seguridad para el personal y puede interferir con las mediciones de PC." },
+                { question: "Un programa de monitoreo completo involucra un sondeo de campo detallado y, entre sondeos, ...", options: ["No hacer nada", "Inspecciones breves y rutinarias", "Reemplazar todos los ánodos", "Apagar el sistema"], correctAnswer: 1, explanation: "El monitoreo efectivo combina sondeos exhaustivos periódicos con inspecciones de rutina más frecuentes (ej. lecturas en rectificadores) para asegurar la operación continua del sistema." },
+                { question: "¿Qué información es crucial obtener sobre el recubrimiento de la estructura?", options: ["El color del recubrimiento", "Si está recubierta o desnuda y el tipo de recubrimiento", "El nombre del aplicador", "La fecha de vencimiento"], correctAnswer: 1, explanation: "Saber si una estructura está recubierta o desnuda y el tipo de recubrimiento es fundamental, ya que determina los requerimientos de corriente, los métodos de sondeo y la interpretación de los datos." },
+                { question: "Conocer la ubicación de bridas aislantes es importante porque...", options: ["Son un buen lugar para tomar un descanso", "Indican la profundidad de la tubería", "Son puntos críticos que deben ser probados para asegurar el aislamiento eléctrico", "Siempre están en corto y deben ser ignoradas"], correctAnswer: 2, explanation: "Las bridas aislantes son diseñadas para seccionar eléctricamente la tubería. Si fallan (entran en corto), pueden comprometer seriamente la efectividad del sistema de PC." },
+                { question: "¿Por qué es útil conocer la ubicación de estructuras metálicas ajenas cercanas?", options: ["Para saber dónde no excavar", "Pueden ser una fuente de interferencia o ser afectadas por nuestro sistema de PC", "Para pedirles prestado equipo", "No es necesario"], correctAnswer: 1, explanation: "Las estructuras cercanas pueden causar o recibir interferencia de corriente. Conocer su ubicación es esencial para diagnosticar problemas y evitar causar corrosión en la infraestructura de otros." },
+                { question: "Si una estructura opera a temperaturas elevadas, ¿cómo afecta esto a la PC?", options: ["Reduce la necesidad de corriente", "No tiene ningún efecto", "Las altas temperaturas pueden deteriorar los recubrimientos y aumentar los requerimientos de corriente", "Mejora la efectividad de la PC"], correctAnswer: 2, explanation: "Las altas temperaturas aceleran las reacciones de corrosión y pueden dañar los recubrimientos protectores, lo que generalmente resulta en una mayor demanda de corriente de protección catódica." }
+            ],
+            // Set 2: Métodos de Sondeo
+            [
+                { question: "La inspección directa (bellhole inspection) de una estructura se utiliza para...", options: ["Realizar una evaluación visual de la condición de la estructura y el recubrimiento", "Medir la resistividad del suelo", "Instalar nuevos ánodos", "Probar la continuidad eléctrica"], correctAnswer: 0, explanation: "La inspección directa implica excavar y exponer la estructura para observar físicamente el estado de la corrosión y la condición del recubrimiento, lo que permite verificar los hallazgos de los sondeos indirectos." },
+                { question: "¿Qué indica la presencia de sulfuro de hierro negro y un olor a huevos podridos (al aplicar ácido) en la superficie de la tubería?", options: ["Un recubrimiento de alta calidad", "Corrosión por bacterias anaeróbicas (SRB)", "Interferencia de CA", "Un buen nivel de protección catódica"], correctAnswer: 1, explanation: "Estas son las señales características de la Corrosión Influenciada Microbiológicamente (MIC) por bacterias reductoras de sulfato (SRB), que pueden acelerar la corrosión en condiciones sin oxígeno." },
+                { question: "El efecto práctico de la actividad bacteriana anaeróbica en la PC es...", options: ["Una disminución en la corriente requerida", "Un aumento en la cantidad de corriente requerida para la protección", "La anulación del sistema de PC", "No tiene ningún efecto"], correctAnswer: 1, explanation: "Las bacterias consumen el hidrógeno que se forma en la superficie del cátodo, un proceso que despolariza la estructura. Para superar esta despolarización y mantener la protección, se necesita más corriente." },
+                { question: "Una prueba de requerimiento de corriente se realiza para...", options: ["Determinar la corriente necesaria para alcanzar un criterio de protección", "Medir la corriente que ya fluye en la tubería", "Probar la vida útil de un rectificador", "Calibrar un voltímetro"], correctAnswer: 0, explanation: "Esta prueba utiliza una fuente de poder y un ánodo temporales para aplicar corriente a la estructura y medir su respuesta de polarización, lo que permite diseñar o ajustar un sistema de PC permanente." },
+                { question: "Para el monitoreo de rutina de un sistema con ánodos galvánicos, la medición más común es...", options: ["La corriente de salida de cada ánodo", "La resistividad del suelo alrededor de cada ánodo", "Potenciales estructura-electrolito en puntos críticos", "El peso restante de cada ánodo"], correctAnswer: 2, explanation: "Dado que los sistemas galvánicos tienen una salida de corriente baja y estable, la forma más práctica de monitorear su rendimiento es midiendo los potenciales en puntos clave para asegurar que se mantengan dentro de los criterios." },
+                { question: "Para el monitoreo de rutina de un sistema de corriente impresa, ¿qué lecturas en la fuente de poder son primordiales?", options: ["La temperatura y la humedad", "El voltaje de CA de entrada", "La salida de corriente CC y voltaje CC", "El número de serie"], correctAnswer: 2, explanation: "Las lecturas más importantes son la salida de corriente (Amperios CC) y voltaje (Voltios CC) del rectificador. Un cambio en estas lecturas es el primer indicador de un problema en el sistema." },
+                { question: "Un 'Punto de Control' para monitoreo remoto es un lugar donde...", options: ["Hay un buen acceso a internet", "El rectificador en cuestión tiene una gran influencia en los potenciales", "El potencial es siempre estable", "Se instalan todos los ánodos"], correctAnswer: 1, explanation: "Un punto de control se elige estratégicamente en un lugar donde las lecturas de potencial son muy sensibles al funcionamiento de un rectificador específico, permitiendo monitorear ese rectificador de forma remota." },
+                { question: "Si una estructura protegida por corriente impresa sufre un corto con una estructura desnuda grande, ¿qué se espera que ocurra con la salida de corriente del rectificador?", options: ["Disminuirá significativamente", "No cambiará notablemente si la resistencia del ánodo es alta", "Se volverá cero", "Se invertirá la polaridad"], correctAnswer: 1, explanation: "En un sistema de corriente impresa, la resistencia del lecho anódico suele ser la mayor parte de la resistencia del circuito. Un corto puede no cambiar la resistencia total lo suficiente como para causar un gran aumento de corriente, pero sí desviará la corriente, causando una caída en los potenciales de protección." },
+                { question: "Si una estructura protegida con ánodos galvánicos sufre un corto con una estructura desnuda, ¿qué se espera que ocurra con la salida de corriente de los ánodos?", options: ["Disminuirá", "Aumentará", "Se volverá cero", "No cambiará"], correctAnswer: 1, explanation: "El corto reduce drásticamente la resistencia del circuito. Según la Ley de Ohm, esto aumentará la diferencia de potencial y, por lo tanto, la salida de corriente de los ánodos galvánicos, haciendo que se consuman mucho más rápido." },
+                { question: "¿Qué es un sondeo de potencial ON/OFF?", options: ["Un sondeo donde el técnico enciende y apaga su medidor", "Un sondeo donde se toman lecturas con la PC encendida y apagada (interrumpida)", "Un sondeo que se realiza solo de día (ON) y no de noche (OFF)", "Un sondeo para verificar interruptores de luz"], correctAnswer: 1, explanation: "Es un sondeo de potencial donde las fuentes de corriente de PC se encienden y apagan cíclicamente. Esto permite medir tanto el potencial con la corriente aplicada (ON) como el potencial libre de caída de IR (OFF)." }
+            ],
+            // Set 3: Frecuencia y Registros
+            [
+                { question: "Según la regulación de EE.UU. (DOT 49CFR192) para gasoductos, los rectificadores deben ser inspeccionados...", options: ["Diariamente", "Anualmente", "Seis veces al año, sin exceder 2.5 meses entre inspecciones", "Solo cuando fallan"], correctAnswer: 2, explanation: "La regulación estadounidense es estricta y requiere inspecciones frecuentes de los rectificadores, al menos seis veces al año, con un intervalo máximo de 2.5 meses entre cada una." },
+                { question: "Según la norma canadiense (CSA Z662), los rectificadores deben ser inspeccionados...", options: ["Anualmente", "Mensualmente, sin exceder 6 semanas", "Semanalmente", "Cada 6 meses"], correctAnswer: 1, explanation: "La norma canadiense exige un monitoreo aún más frecuente, con inspecciones mensuales que no deben exceder un intervalo de 6 semanas." },
+                { question: "La norma NACE RP0169 sugiere que los rectificadores se inspeccionen a intervalos de...", options: ["5 años", "2 meses", "Diariamente", "Semanalmente"], correctAnswer: 1, explanation: "Como práctica industrial general, NACE recomienda inspecciones cada 2 meses, aunque esto puede variar según la criticidad y las condiciones del sistema." },
+                { question: "Si un rectificador se lee cada 2 meses y se encuentra apagado una vez al año justo después de la lectura, ¿cuánto tiempo acumulado estaría la tubería sin protección después de 12 años?", options: ["1 año", "2 meses", "2 años", "No estaría sin protección"], correctAnswer: 2, explanation: "Si está apagado durante 2 meses cada año, en 12 años acumularía 2 meses/año * 12 años = 24 meses, lo que equivale a 2 años sin protección." },
+                { question: "¿Por qué es obligatorio mantener registros completos y precisos?", options: ["Solo por razones históricas", "Por razones técnicas, históricas y legales", "Para aumentar el papeleo", "Solo si la empresa es grande"], correctAnswer: 1, explanation: "Los registros son vitales para el análisis técnico, para entender la historia del sistema y, crucialmente, para demostrar el cumplimiento y la debida diligencia en caso de un incidente legal." },
+                { question: "¿Cuál de los siguientes elementos es INDISPENSABLE registrar en cada medición de campo?", options: ["La temperatura del aire", "El nombre del fabricante del medidor", "El valor, la polaridad, las unidades y el tipo de electrodo de referencia", "La hora exacta del día"], correctAnswer: 2, explanation: "Una medición está incompleta y no tiene valor si falta alguno de estos cuatro componentes: el número (valor), su signo (polaridad), en qué se mide (unidades, ej. mV) y con qué se midió (referencia, ej. CSE)." },
+                { question: "Los registros de una instalación de PC regulada deben guardarse por...", options: ["1 año", "5 años", "Hasta que el técnico se jubile", "La vida útil de la estructura"], correctAnswer: 3, explanation: "Las regulaciones generalmente exigen que los registros de diseño, instalación y pruebas de PC se mantengan durante toda la vida útil de la tubería o estructura." },
+                { question: "El uso de bases de datos computarizadas para los registros de corrosión permite...", options: ["Eliminar la necesidad de técnicos de campo", "Generar fácilmente informes, identificar tendencias y programar futuras inspecciones", "Hacer los datos menos seguros", "Ocupar más espacio de almacenamiento"], correctAnswer: 1, explanation: "La digitalización de registros facilita enormemente la gestión de datos, el análisis de tendencias, la identificación de áreas problemáticas y la programación del mantenimiento y las inspecciones." },
+                { question: "¿Qué es ECDA (External Corrosion Direct Assessment)?", options: ["Un tipo de recubrimiento", "Una metodología para evaluar la integridad de una tubería sin inspección interna", "Una marca de equipo de medición", "Una conferencia anual de corrosión"], correctAnswer: 1, explanation: "ECDA es un proceso estructurado que utiliza datos históricos y sondeos de campo (como CIS) para evaluar la integridad de una tubería frente a la corrosión externa, especialmente en tuberías donde no se pueden usar 'pigs' inteligentes." },
+                { question: "Además de las mediciones eléctricas, ¿qué otro tipo de registro es invaluable para evaluar la efectividad de un programa de PC?", options: ["Registros de compra de equipo", "Registros de asistencia del personal", "Registros de fugas relacionadas con la corrosión", "Registros de condiciones climáticas"], correctAnswer: 2, explanation: "Un registro de fugas a lo largo del tiempo es una prueba directa y poderosa de la efectividad de un sistema de PC. Una disminución o cese en la tasa de fugas después de instalar la PC demuestra su éxito." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+        let lastCorrectIndex = -1; // Variable to track the last correct answer's position
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            lastCorrectIndex = -1; // Reset for each new game
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            // --- Logic to shuffle answers ---
+            const correctAnswerText = question.options[question.correctAnswer];
+            let shuffledOptions;
+            let newCorrectIndex;
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            do {
+                shuffledOptions = shuffleArray([...question.options]);
+                newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+            } while (currentQuestionIndex > 0 && newCorrectIndex === lastCorrectIndex && question.options.length > 1);
+            
+            lastCorrectIndex = newCorrectIndex;
+            // --- End of shuffle logic ---
+
+            answersContainer.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button, newCorrectIndex);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button, correctIndex) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                answersContainer.children[correctIndex].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            selectSet(currentSetIndex);
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
