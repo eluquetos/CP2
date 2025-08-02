@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Revisión Básica de Electricidad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-3xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Revisión Básica de Electricidad</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Definiciones Básicas</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Ley de Ohm y Potencia</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Leyes de Kirchhoff</button>
+                <button onclick="selectSet(3)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 4: Circuitos Serie y Paralelo</button>
+                <button onclick="selectSet(4)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg lg:col-span-3 bg-cyan-700 hover:bg-cyan-600 border-cyan-500">Nivel 5: Desafío de Cálculos (20 Preguntas)</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Definiciones Básicas
+            [
+                { question: "¿Qué es el Voltaje?", options: ["El flujo de cargas", "La oposición al flujo de cargas", "La fuerza electromotriz que pone las cargas en movimiento", "La energía consumida por un dispositivo"], correctAnswer: 2, explanation: "El voltaje (E o V) es la fuerza o diferencia de potencial que impulsa a las cargas eléctricas (electrones) a moverse, creando una corriente. Se mide en voltios (V)." },
+                { question: "¿Qué es la Corriente?", options: ["La fuerza que mueve las cargas", "La oposición al flujo de cargas", "El flujo de cargas a lo largo de un conductor", "La propiedad intrínseca de un material"], correctAnswer: 2, explanation: "La corriente (I) es la tasa de flujo de carga eléctrica a través de un conductor. Se mide en amperios (A)." },
+                { question: "¿Qué es la Resistencia?", options: ["El flujo de cargas", "La oposición que encuentran las cargas al moverse a través de un material", "La energía que pone las cargas en movimiento", "La velocidad de las cargas"], correctAnswer: 1, explanation: "La resistencia (R) es la propiedad de un material de oponerse al flujo de corriente eléctrica. Se mide en ohmios (Ω)." },
+                { question: "Un milivoltio (mV) es igual a:", options: ["1,000 V", "0.1 V", "0.01 V", "0.001 V"], correctAnswer: 3, explanation: "El prefijo 'mili' significa una milésima parte. Por lo tanto, 1 milivoltio (mV) es igual a 0.001 voltios (V)." },
+                { question: "Un microamperio (µA) es igual a:", options: ["0.001 A", "0.0001 A", "0.00001 A", "0.000001 A"], correctAnswer: 3, explanation: "El prefijo 'micro' significa una millonésima parte. Por lo tanto, 1 microamperio (µA) es igual a 0.000001 amperios (A)." },
+                { question: "¿Qué tipo de corriente fluye constantemente en una sola dirección?", options: ["Corriente Alterna (CA)", "Corriente Directa (CC)", "Corriente Pulsante", "Corriente Inducida"], correctAnswer: 1, explanation: "La Corriente Directa (CC), como la de una batería, fluye siempre en la misma dirección, del terminal positivo al negativo (convencionalmente)." },
+                { question: "¿Qué tipo de corriente invierte su dirección de flujo regularmente?", options: ["Corriente Directa (CC)", "Corriente Estática", "Corriente Galvánica", "Corriente Alterna (CA)"], correctAnswer: 3, explanation: "La Corriente Alterna (CA), como la de la red eléctrica doméstica, cambia de dirección periódicamente, comúnmente 50 o 60 veces por segundo (50 o 60 Hz)." },
+                { question: "¿Qué es la Resistividad (ρ)?", options: ["La resistencia total de un circuito", "La resistencia de un conductor de longitud y área unitarias", "El inverso de la resistencia", "La facilidad con la que fluye la corriente"], correctAnswer: 1, explanation: "La resistividad es una propiedad intrínseca de un material que indica qué tan fuertemente se opone al flujo de corriente. A diferencia de la resistencia, no depende de la forma del objeto." },
+                { question: "El símbolo de un resistor en un diagrama esquemático es:", options: ["Una línea recta", "Una línea en zigzag", "Un círculo con una 'V' adentro", "Dos líneas paralelas de diferente longitud"], correctAnswer: 1, explanation: "Un resistor se representa con una línea en zigzag o un rectángulo en los diagramas de circuitos eléctricos." },
+                { question: "¿Qué representa el símbolo de tierra en un circuito eléctrico?", options: ["Un punto de voltaje infinito", "Un punto de referencia de potencial cero", "Una conexión a la batería", "Un interruptor"], correctAnswer: 1, explanation: "El símbolo de tierra se utiliza para indicar un punto común en el circuito que se toma como referencia de potencial cero (0V), desde el cual se miden todos los demás voltajes." }
+            ],
+            // Set 2: Ley de Ohm y Potencia
+            [
+                { question: "¿Cuál es la fórmula correcta de la Ley de Ohm?", options: ["R = I / V", "V = I * R", "I = V * R", "V = I / R"], correctAnswer: 1, explanation: "La Ley de Ohm establece que el voltaje (V) a través de un resistor es directamente proporcional a la corriente (I) que fluye a través de él y a su resistencia (R). La fórmula es V = I * R." },
+                { question: "Si un circuito tiene un voltaje de 12 V y una resistencia de 6 Ω, ¿cuál es la corriente?", options: ["2 A", "72 A", "0.5 A", "18 A"], correctAnswer: 0, explanation: "Usando la Ley de Ohm, I = V / R. Entonces, I = 12 V / 6 Ω = 2 A." },
+                { question: "Si una corriente de 3 A fluye a través de un resistor de 5 Ω, ¿cuál es el voltaje a través del resistor?", options: ["1.67 V", "8 V", "15 V", "0.6 V"], correctAnswer: 2, explanation: "Usando la Ley de Ohm, V = I * R. Entonces, V = 3 A * 5 Ω = 15 V." },
+                { question: "Un circuito tiene un voltaje de 24 V y una corriente de 6 A. ¿Cuál es la resistencia?", options: ["144 Ω", "4 Ω", "0.25 Ω", "30 Ω"], correctAnswer: 1, explanation: "Usando la Ley de Ohm, R = V / I. Entonces, R = 24 V / 6 A = 4 Ω." },
+                { question: "¿Qué es la Potencia eléctrica?", options: ["La oposición al flujo de corriente", "La fuerza que mueve la corriente", "La tasa a la que se consume la energía eléctrica", "La cantidad total de carga"], correctAnswer: 2, explanation: "La potencia (P) es la cantidad de energía eléctrica consumida o suministrada por unidad de tiempo. Se mide en vatios (W)." },
+                { question: "¿Cuál es una fórmula para calcular la Potencia (P)?", options: ["P = V / I", "P = I / V", "P = V * I", "P = V * R"], correctAnswer: 2, explanation: "La potencia se puede calcular multiplicando el voltaje (V) por la corriente (I). La fórmula es P = V * I." },
+                { question: "Si un dispositivo opera a 12 V y consume 2 A, ¿cuánta potencia utiliza?", options: ["6 W", "0.17 W", "14 W", "24 W"], correctAnswer: 3, explanation: "Usando la fórmula de potencia, P = V * I. Entonces, P = 12 V * 2 A = 24 W." },
+                { question: "Un rectificador de PC tiene una salida de 20 V y 5 A. ¿Cuál es la potencia de salida?", options: ["4 W", "100 W", "25 W", "0.25 W"], correctAnswer: 1, explanation: "Usando la fórmula de potencia, P = V * I. Entonces, P = 20 V * 5 A = 100 W." },
+                { question: "Combinando la Ley de Ohm y la fórmula de potencia, ¿cuál es otra forma de expresar la potencia?", options: ["P = I² * R", "P = V² * I", "P = R² / V", "P = I / R"], correctAnswer: 0, explanation: "Si sustituimos V = I*R en P = V*I, obtenemos P = (I*R)*I = I²*R. Esta fórmula es útil cuando no conocemos el voltaje." },
+                { question: "Un calentador tiene una resistencia de 10 Ω y por él pasa una corriente de 5 A. ¿Qué potencia disipa?", options: ["50 W", "2 W", "0.5 W", "250 W"], correctAnswer: 3, explanation: "Usando la fórmula P = I² * R. Entonces, P = (5 A)² * 10 Ω = 25 * 10 = 250 W." }
+            ],
+            // Set 3: Leyes de Kirchhoff
+            [
+                { question: "¿Qué establece la Ley de Voltaje de Kirchhoff (LVK)?", options: ["La corriente total en un circuito es cero", "La suma de los voltajes en una malla cerrada es igual a cero", "La resistencia total es la suma de todas las resistencias", "El voltaje es el mismo en todos los componentes"], correctAnswer: 1, explanation: "La LVK establece que la suma algebraica de todas las caídas y subidas de potencial (voltajes) en cualquier bucle cerrado de un circuito debe ser igual a cero." },
+                { question: "En un circuito en serie con una batería de 9V y dos resistores, si la caída de voltaje en el primer resistor es 4V, ¿cuál es la caída en el segundo?", options: ["4 V", "9 V", "13 V", "5 V"], correctAnswer: 3, explanation: "Según la LVK, la suma de las caídas de voltaje debe ser igual al voltaje de la fuente. 9V (fuente) - 4V (caída 1) = 5V (caída 2)." },
+                { question: "¿Qué establece la Ley de Corriente de Kirchhoff (LCK)?", options: ["La corriente es la misma en todo el circuito", "La suma de las corrientes que entran en un nodo es igual a la suma de las que salen", "El voltaje en un nodo es cero", "La corriente se divide por igual en cada rama"], correctAnswer: 1, explanation: "La LCK establece que la cantidad total de corriente que fluye hacia un punto de unión (nodo) en un circuito debe ser igual a la cantidad total de corriente que sale de ese nodo." },
+                { question: "Si a un nodo llegan 10 A por un cable y salen 4 A por otro, ¿cuánta corriente debe salir por un tercer cable conectado al mismo nodo?", options: ["14 A", "6 A", "40 A", "2.5 A"], correctAnswer: 1, explanation: "Según la LCK, Corriente de Entrada = Corriente de Salida. 10 A = 4 A + I₃. Por lo tanto, I₃ = 10 A - 4 A = 6 A." },
+                { question: "La Ley de Voltaje de Kirchhoff es una consecuencia de la conservación de la...", options: ["Carga", "Masa", "Energía", "Resistencia"], correctAnswer: 2, explanation: "La LVK se basa en el principio de conservación de la energía. La energía ganada por las cargas de la fuente de voltaje debe ser igual a la energía perdida en los componentes del circuito." },
+                { question: "La Ley de Corriente de Kirchhoff es una consecuencia de la conservación de la...", options: ["Energía", "Masa", "Carga", "Potencia"], correctAnswer: 2, explanation: "La LCK se basa en el principio de conservación de la carga. La carga no se puede crear ni destruir, por lo que la cantidad de carga que llega a un punto debe ser la misma que la que se va." },
+                { question: "En un circuito en serie simple, la Ley de Corriente de Kirchhoff implica que la corriente...", options: ["Es diferente en cada punto", "Es la misma en todos los puntos del circuito", "Aumenta a medida que avanza", "Disminuye en cada resistor"], correctAnswer: 1, explanation: "En un circuito en serie, solo hay una ruta para el flujo de corriente. Por lo tanto, la corriente es constante en cada componente del circuito." },
+                { question: "En un circuito en paralelo, la Ley de Voltaje de Kirchhoff implica que el voltaje...", options: ["Es diferente en cada rama", "Es el mismo a través de cada rama paralela", "Se suma en cada rama", "Disminuye en cada rama"], correctAnswer: 1, explanation: "Todas las ramas de un circuito paralelo están conectadas entre los mismos dos puntos, por lo que la diferencia de potencial (voltaje) es la misma para cada una de ellas." },
+                { question: "Si dos baterías de 12V están en un circuito en serie y se oponen entre sí (positivo con positivo), ¿cuál es el voltaje total de la fuente?", options: ["24 V", "12 V", "0 V", "6 V"], correctAnswer: 2, explanation: "Según la LVK, si las fuentes se oponen, sus voltajes se restan. 12V - 12V = 0V. No habría flujo de corriente." },
+                { question: "La Ley de Corriente de Kirchhoff se aplica a...", options: ["Solo circuitos en serie", "Solo circuitos en paralelo", "Cualquier nodo o punto de unión en un circuito", "Solo a las baterías"], correctAnswer: 2, explanation: "La LCK es una ley fundamental que se aplica a cualquier punto de un circuito donde se unan tres o más conductores (un nodo)." }
+            ],
+            // Set 4: Circuitos Serie y Paralelo
+            [
+                { question: "¿Cómo se calcula la resistencia total (RT) en un circuito en serie?", options: ["Es el promedio de las resistencias", "Es la suma de todas las resistencias individuales", "Es el inverso de la suma de los inversos", "Es la resistencia más pequeña"], correctAnswer: 1, explanation: "En un circuito en serie, la resistencia total es simplemente la suma de todas las resistencias en la ruta: RT = R₁ + R₂ + R₃ + ..." },
+                { question: "Tres resistores de 2 Ω, 3 Ω y 5 Ω están en serie. ¿Cuál es la resistencia total?", options: ["10 Ω", "1 Ω", "30 Ω", "0.97 Ω"], correctAnswer: 0, explanation: "En serie, las resistencias se suman: RT = 2 Ω + 3 Ω + 5 Ω = 10 Ω." },
+                { question: "En un circuito en serie, la corriente que fluye a través de cada componente es...", options: ["Diferente", "La misma", "Proporcional a la resistencia", "Cero"], correctAnswer: 1, explanation: "Dado que solo hay una ruta, la corriente es la misma en todos los puntos de un circuito en serie." },
+                { question: "¿Cómo se calcula la resistencia total (RT) de resistores en paralelo?", options: ["Es la suma de las resistencias", "Es el promedio de las resistencias", "1/RT = 1/R₁ + 1/R₂ + 1/R₃ + ...", "Es la resistencia más grande"], correctAnswer: 2, explanation: "Para resistores en paralelo, el inverso de la resistencia total es la suma de los inversos de las resistencias individuales." },
+                { question: "Dos resistores de 10 Ω están en paralelo. ¿Cuál es la resistencia total?", options: ["20 Ω", "10 Ω", "5 Ω", "100 Ω"], correctAnswer: 2, explanation: "Para dos resistores iguales en paralelo, la resistencia total es la mitad de una de ellas. 1/RT = 1/10 + 1/10 = 2/10. RT = 10/2 = 5 Ω." },
+                { question: "En un circuito en paralelo, el voltaje a través de cada rama es...", options: ["Diferente", "Cero", "La suma de los voltajes de la fuente", "El mismo"], correctAnswer: 3, explanation: "Todos los componentes en un circuito paralelo están conectados a los mismos dos puntos, por lo que la diferencia de potencial (voltaje) es la misma para todos." },
+                { question: "Si se añade otro resistor en serie a un circuito, la resistencia total ____ y la corriente total ____.", options: ["aumenta / disminuye", "disminuye / aumenta", "aumenta / aumenta", "disminuye / disminuye"], correctAnswer: 0, explanation: "Añadir un resistor en serie aumenta la resistencia total del circuito. Según la Ley de Ohm (I=V/R), si la resistencia aumenta, la corriente total debe disminuir." },
+                { question: "Si se añade otro resistor en paralelo a un circuito, la resistencia total ____ y la corriente total ____.", options: ["aumenta / disminuye", "disminuye / aumenta", "aumenta / aumenta", "disminuye / disminuye"], correctAnswer: 1, explanation: "Añadir una nueva rama en paralelo proporciona una ruta adicional para la corriente. Esto disminuye la resistencia total del circuito. Según la Ley de Ohm (I=V/R), si la resistencia disminuye, la corriente total de la fuente debe aumentar." },
+                { question: "En un circuito en serie, si un componente se quema (se abre el circuito), ¿qué le pasa a la corriente?", options: ["Aumenta", "Disminuye un poco", "Se detiene por completo", "No cambia"], correctAnswer: 2, explanation: "En un circuito en serie, si hay una interrupción en cualquier punto, se rompe la única ruta para la corriente, por lo que el flujo de corriente se detiene en todo el circuito." },
+                { question: "En un circuito en paralelo, si una rama se abre, la resistencia total del circuito...", options: ["Aumenta", "Disminuye", "Se vuelve cero", "No cambia"], correctAnswer: 0, explanation: "Al eliminar una de las rutas paralelas, la resistencia total del circuito aumenta (porque hay menos caminos para la corriente). La corriente seguirá fluyendo por las otras ramas." }
+            ],
+            // Set 5: Desafío de Cálculos
+            [
+                { question: "CÁLCULO: Un circuito tiene una fuente de 24 V y una resistencia total de 8 Ω. ¿Cuál es la corriente?", options: ["3 A", "192 A", "0.33 A", "32 A"], correctAnswer: 0, explanation: "I = V / R = 24 V / 8 Ω = 3 A." },
+                { question: "CÁLCULO: Una corriente de 500 mA fluye a través de una resistencia de 20 Ω. ¿Cuál es la caída de voltaje?", options: ["10,000 V", "0.025 V", "10 V", "40 V"], correctAnswer: 2, explanation: "Primero, convierte 500 mA a Amperios: 500 mA = 0.5 A. Luego, V = I * R = 0.5 A * 20 Ω = 10 V." },
+                { question: "CÁLCULO: Un dispositivo consume 60 W a 12 V. ¿Qué corriente consume?", options: ["5 A", "720 A", "0.2 A", "48 A"], correctAnswer: 0, explanation: "I = P / V = 60 W / 12 V = 5 A." },
+                { question: "CÁLCULO: Tres resistores (10 Ω, 20 Ω, 30 Ω) están en serie. ¿Cuál es la resistencia total?", options: ["60 Ω", "5.45 Ω", "10 Ω", "30 Ω"], correctAnswer: 0, explanation: "En serie, RT = R₁ + R₂ + R₃ = 10 + 20 + 30 = 60 Ω." },
+                { question: "CÁLCULO: Si los tres resistores (10, 20, 30 Ω) del problema anterior se conectan a una fuente de 120 V, ¿cuál es la corriente total?", options: ["12 A", "0.5 A", "6 A", "2 A"], correctAnswer: 3, explanation: "La resistencia total es 60 Ω. I = V / RT = 120 V / 60 Ω = 2 A." },
+                { question: "CÁLCULO: Dos resistores (12 Ω y 6 Ω) están en paralelo. ¿Cuál es la resistencia total?", options: ["18 Ω", "4 Ω", "72 Ω", "0.25 Ω"], correctAnswer: 1, explanation: "1/RT = 1/12 + 1/6 = 1/12 + 2/12 = 3/12. RT = 12/3 = 4 Ω." },
+                { question: "CÁLCULO: Si los dos resistores (12 Ω y 6 Ω) del problema anterior se conectan a una fuente de 24 V, ¿cuál es la corriente total?", options: ["1.33 A", "4 A", "6 A", "2 A"], correctAnswer: 2, explanation: "La resistencia total es 4 Ω. I = V / RT = 24 V / 4 Ω = 6 A." },
+                { question: "CÁLCULO: En el circuito paralelo anterior (12Ω y 6Ω con 24V), ¿cuál es la corriente que pasa solo por el resistor de 12 Ω?", options: ["2 A", "4 A", "0.5 A", "6 A"], correctAnswer: 0, explanation: "El voltaje en cada rama es 24 V. I₁₂ = V / R₁₂ = 24 V / 12 Ω = 2 A." },
+                { question: "CÁLCULO: Una corriente de 15 A entra a un nodo. Salen dos corrientes, una de 9 A. ¿Cuál es la otra corriente de salida?", options: ["24 A", "1.67 A", "135 A", "6 A"], correctAnswer: 3, explanation: "LCK: I_in = I_out. 15 A = 9 A + I₂. I₂ = 15 - 9 = 6 A." },
+                { question: "CÁLCULO: Un resistor de 5 Ω está en serie con una combinación en paralelo de dos resistores de 10 Ω. ¿Cuál es la resistencia total del circuito?", options: ["25 Ω", "10 Ω", "5.55 Ω", "1.67 Ω"], correctAnswer: 1, explanation: "Primero, calcula la resistencia del paralelo: 10 Ω || 10 Ω = 5 Ω. Luego, súmala al resistor en serie: 5 Ω + 5 Ω = 10 Ω." },
+                { question: "CÁLCULO: Un circuito tiene una fuente de 1.5 V y una corriente de 10 mA. ¿Cuál es la resistencia?", options: ["150 Ω", "15 Ω", "0.0067 Ω", "1500 Ω"], correctAnswer: 0, explanation: "Convierte 10 mA a 0.01 A. R = V / I = 1.5 V / 0.01 A = 150 Ω." },
+                { question: "CÁLCULO: Un rectificador tiene una salida de 15 V y 30 A. ¿Cuál es la potencia de salida en vatios?", options: ["2 W", "0.5 W", "450 W", "45 W"], correctAnswer: 2, explanation: "P = V * I = 15 V * 30 A = 450 W." },
+                { question: "CÁLCULO: ¿Qué potencia disipa un resistor de 100 Ω si la caída de voltaje a través de él es de 50 V?", options: ["25 W", "2 W", "5000 W", "0.5 W"], correctAnswer: 0, explanation: "Podemos usar P = V²/R. P = (50 V)² / 100 Ω = 2500 / 100 = 25 W." },
+                { question: "CÁLCULO: Tres resistores de 30 Ω están en paralelo. ¿Cuál es la resistencia total?", options: ["90 Ω", "30 Ω", "10 Ω", "3.33 Ω"], correctAnswer: 2, explanation: "Para N resistores iguales en paralelo, RT = R / N. RT = 30 Ω / 3 = 10 Ω." },
+                { question: "CÁLCULO: Un circuito en serie tiene una batería de 12V y tres resistores iguales. Si la corriente total es 2A, ¿cuál es el valor de cada resistor?", options: ["6 Ω", "3 Ω", "2 Ω", "18 Ω"], correctAnswer: 2, explanation: "Primero, encuentra la resistencia total: RT = V / I = 12 V / 2 A = 6 Ω. Como los tres resistores son iguales y están en serie, cada uno es RT / 3 = 6 Ω / 3 = 2 Ω." },
+                { question: "CÁLCULO: Un circuito paralelo tiene una fuente de 9V. Una rama tiene 3A y la otra 6A. ¿Cuál es la resistencia total del circuito?", options: ["1 Ω", "9 Ω", "27 Ω", "1.5 Ω"], correctAnswer: 0, explanation: "Primero, encuentra la corriente total (LCK): IT = 3 A + 6 A = 9 A. Luego, calcula la resistencia total: RT = V / IT = 9 V / 9 A = 1 Ω." },
+                { question: "CÁLCULO: Un cable de cobre tiene una resistencia de 0.5 Ω. Si fluye una corriente de 20 A, ¿cuál es la caída de voltaje en el cable?", options: ["10 V", "40 V", "0.025 V", "100 V"], correctAnswer: 0, explanation: "V = I * R = 20 A * 0.5 Ω = 10 V." },
+                { question: "CÁLCULO: Un circuito en serie tiene una fuente de 50V, un resistor R1 de 15Ω y un resistor R2 de 10Ω. ¿Cuál es la caída de voltaje solo en R1?", options: ["30 V", "20 V", "50 V", "25 V"], correctAnswer: 0, explanation: "RT = 15+10=25Ω. IT = 50V/25Ω = 2A. La corriente es 2A en todo el circuito. V(R1) = IT * R1 = 2A * 15Ω = 30V." },
+                { question: "CÁLCULO: Dos ánodos galvánicos están en paralelo. Uno tiene una resistencia a tierra de 4 Ω y el otro de 12 Ω. ¿Cuál es su resistencia combinada a tierra?", options: ["16 Ω", "8 Ω", "3 Ω", "1.33 Ω"], correctAnswer: 2, explanation: "1/RT = 1/4 + 1/12 = 3/12 + 1/12 = 4/12. RT = 12/4 = 3 Ω." },
+                { question: "CÁLCULO: Si un rectificador consume 1200 W de potencia de CA y su salida de CC es de 40 V y 25 A, ¿cuál es su eficiencia?", options: ["83.3%", "120%", "75%", "100%"], correctAnswer: 0, explanation: "Potencia de salida CC = V * I = 40 V * 25 A = 1000 W. Eficiencia = (Potencia de Salida / Potencia de Entrada) * 100 = (1000 W / 1200 W) * 100 = 83.3%." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+        let lastCorrectIndex = -1; // Variable to track the last correct answer's position
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            lastCorrectIndex = -1; // Reset for each new game
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            // --- Logic to shuffle answers ---
+            const correctAnswerText = question.options[question.correctAnswer];
+            let shuffledOptions;
+            let newCorrectIndex;
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            do {
+                shuffledOptions = shuffleArray([...question.options]);
+                newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+            } while (currentQuestionIndex > 0 && newCorrectIndex === lastCorrectIndex && question.options.length > 1);
+            
+            lastCorrectIndex = newCorrectIndex;
+            // --- End of shuffle logic ---
+
+            answersContainer.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button, newCorrectIndex);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button, correctIndex) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                answersContainer.children[correctIndex].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            startGame();
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
