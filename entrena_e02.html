@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Ejercicios Teoría de la Corrosión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-3xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Ejercicios Sistemas de PC</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Conceptos del Experimento</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Ejercicios con Sistema Galvánico</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Ejercicios con Corriente Impresa</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Conceptos del Experimento
+            [
+                { question: "En el Experimento 3.1, se crea una celda de corrosión con Acero y Cobre. ¿Cuál es el propósito de conectar un ánodo de Magnesio?", options: ["Aumentar la corrosión del acero", "Medir la temperatura del agua", "Mitigar la corrosión mediante protección catódica sacrificial", "Actuar como un segundo cátodo"], correctAnswer: 2, explanation: "El Magnesio es mucho más activo que el acero y el cobre. Al conectarlo, se convierte en un ánodo de sacrificio que se corroe preferentemente para proteger la celda Acero-Cobre." },
+                { question: "La corriente que fluye entre el Acero y el Cobre antes de conectar el Magnesio se llama...", options: ["Corriente de protección catódica (Icp)", "Corriente de circuito abierto", "Corriente de corrosión (Icorr)", "Corriente inducida"], correctAnswer: 2, explanation: "Icorr es la corriente generada por la celda de corrosión natural entre el ánodo de acero y el cátodo de cobre." },
+                { question: "La corriente que fluye DESDE el ánodo de Magnesio HACIA la celda Acero-Cobre se llama...", options: ["Corriente de corrosión (Icorr)", "Corriente de protección catódica (Icp)", "Corriente de fuga", "Corriente estática"], correctAnswer: 1, explanation: "Icp es la corriente beneficiosa suministrada por el ánodo de sacrificio para contrarrestar la corriente de corrosión." },
+                { question: "Según las conclusiones del experimento, a medida que la corriente de protección catódica (Icp) aumenta, la corriente de corrosión (Icorr)...", options: ["Aumenta", "Se mantiene igual", "Disminuye", "Se invierte"], correctAnswer: 2, explanation: "El objetivo de la PC es oponerse a la corriente de corrosión. Por lo tanto, un aumento en la Icp causa una disminución directa en la Icorr, ralentizando la corrosión." },
+                { question: "En el experimento, se utilizan resistores de diferentes valores (10kΩ, 1kΩ, etc.) entre el Magnesio y el Cobre. ¿Cuál es su función?", options: ["Calentar el agua", "Controlar la cantidad de corriente de protección catódica (Icp)", "Medir el pH", "Actuar como fusibles"], correctAnswer: 1, explanation: "Los resistores se usan para limitar el flujo de corriente. Al cambiar el valor del resistor, se puede variar la cantidad de Icp para observar su efecto sobre la celda de corrosión." },
+                { question: "Un resistor con un valor más BAJO (ej. 10 Ω vs 1000 Ω) permitirá que fluya ____ corriente de protección catódica.", options: ["Menos", "La misma cantidad de", "Más", "Cero"], correctAnswer: 2, explanation: "Según la Ley de Ohm (I = V/R), si el voltaje de impulso (la diferencia de potencial Mg-Cu/Fe) es constante, una resistencia más baja en el circuito permitirá un mayor flujo de corriente." },
+                { question: "El Experimento 3.2 utiliza una batería y un segundo electrodo de acero. Este es un ejemplo de un sistema de...", options: ["Protección catódica galvánica", "Protección catódica por corriente impresa", "Monitoreo de corrosión", "Aislamiento eléctrico"], correctAnswer: 1, explanation: "Al usar una fuente de poder externa (la batería) para 'imprimir' o forzar la corriente desde un ánodo (el segundo acero) hacia la estructura a proteger, se está demostrando un sistema de corriente impresa." },
+                { question: "¿Cuál es la principal ventaja de un sistema de corriente impresa, como se demuestra en el Experimento 3.2?", options: ["Es más simple", "No necesita ánodos", "Puede lograr una mayor corriente de PC y más polarización", "No consume energía"], correctAnswer: 2, explanation: "A diferencia de un sistema galvánico, donde el voltaje es fijo, una fuente de poder externa puede suministrar un voltaje y una corriente mucho mayores, permitiendo proteger estructuras más grandes o en ambientes más resistivos." },
+                { question: "En el montaje de corriente impresa, el terminal negativo de la batería se conecta a...", options: ["El ánodo de acero", "El cátodo de cobre (la estructura a proteger)", "El electrodo de referencia", "Tierra"], correctAnswer: 1, explanation: "Para proteger una estructura, siempre se debe conectar al terminal negativo de la fuente de CC. Esto la convierte en el cátodo del circuito de protección." },
+                { question: "En el montaje de corriente impresa, el terminal positivo de la batería se conecta a...", options: ["El cátodo de cobre", "El ánodo de acero (el segundo electrodo)", "El ánodo de acero original", "El electrodo de referencia"], correctAnswer: 1, explanation: "El ánodo del sistema de corriente impresa, que es el que descargará la corriente al electrolito, siempre se conecta al terminal positivo de la fuente de CC." }
+            ],
+            // Set 2: Ejercicios con Sistema Galvánico
+            [
+                { question: "EJERCICIO: En el Experimento 3.1, mides una caída de voltaje de 200 mV a través del resistor de 10,000 Ω. ¿Cuál es la corriente de protección catódica (Icp) calculada?", options: ["20 A", "2 mA", "200 mA", "20 µA (0.02 mA)"], correctAnswer: 3, explanation: "Usa la Ley de Ohm: I = V / R. Primero convierte 200 mV a 0.2 V. Icp = 0.2 V / 10,000 Ω = 0.00002 A, que es igual a 20 microamperios (µA) o 0.02 mA." },
+                { question: "EJERCICIO: Cambias al resistor de 1,000 Ω y mides una caída de voltaje de 150 mV. ¿Cuál es la nueva Icp?", options: ["150 µA (0.15 mA)", "15 mA", "1.5 A", "150 A"], correctAnswer: 0, explanation: "Icp = V / R = 0.15 V / 1,000 Ω = 0.00015 A, que es igual a 150 microamperios (µA) o 0.15 mA." },
+                { question: "EJERCICIO: Con el resistor de 100 Ω, mides una caída de voltaje de 80 mV. ¿Cuál es la Icp?", options: ["8 mA", "800 µA (0.8 mA)", "0.08 mA", "80 mA"], correctAnswer: 1, explanation: "Icp = V / R = 0.08 V / 100 Ω = 0.0008 A, que es igual a 800 microamperios (µA) o 0.8 mA." },
+                { question: "EJERCICIO: Finalmente, con el resistor de 10 Ω, mides una caída de voltaje de 30 mV. ¿Cuál es la Icp?", options: ["300 mA", "0.3 mA", "3 A", "3 mA"], correctAnswer: 3, explanation: "Icp = V / R = 0.03 V / 10 Ω = 0.003 A, que es igual a 3 miliamperios (mA)." },
+                { question: "SIMULACIÓN: Mides una corriente de corrosión (Icorr) inicial de 0.5 mA. Al conectar el ánodo de Mg con un resistor, la Icorr baja a 0.2 mA. ¿Qué significa esto?", options: ["La protección no funciona", "La protección catódica está mitigando parcialmente la corrosión", "La corrosión ha aumentado", "El experimento es incorrecto"], correctAnswer: 1, explanation: "La disminución de la corriente de corrosión de 0.5 mA a 0.2 mA demuestra que la corriente de protección del ánodo de magnesio está contrarrestando exitosamente una parte de la corrosión." },
+                { question: "SIMULACIÓN: El potencial estático del acero es -600 mV. Al conectar el ánodo de Mg, su potencial polarizado se va a -850 mV. ¿Qué indica este cambio?", options: ["Que el acero se está corroyendo más rápido", "Que el acero está recibiendo corriente catódica y se está polarizando", "Que el medidor está dañado", "Que el agua está contaminada"], correctAnswer: 1, explanation: "Un desplazamiento del potencial en la dirección negativa (más activo) es la definición de polarización catódica, lo que indica que la estructura está recibiendo corriente de protección." },
+                { question: "SIMULACIÓN: Si la Icorr es 0.1 mA y calculas que la Icp es 0.1 mA, ¿qué puedes concluir?", options: ["Que la corrosión se ha detenido por completo", "Que se necesita más corriente", "Que la corrosión se ha duplicado", "Que el ánodo de Mg no es necesario"], correctAnswer: 0, explanation: "Teóricamente, la corrosión se detiene cuando la corriente de protección catódica es igual o mayor que la corriente de corrosión. En este caso, la Icp ha neutralizado la Icorr." },
+                { question: "EJERCICIO: Si necesitas una Icp de 1 mA y el voltaje de impulso del sistema es de 0.5 V (500 mV), ¿qué valor de resistor deberías usar?", options: ["1000 Ω", "500 Ω", "100 Ω", "50 Ω"], correctAnswer: 1, explanation: "Usa la Ley de Ohm: R = V / I. Convierte 1 mA a 0.001 A. R = 0.5 V / 0.001 A = 500 Ω." },
+                { question: "SIMULACIÓN: Después de un tiempo, notas que para la misma resistencia, la Icp ha disminuido. ¿Cuál es una causa probable?", options: ["El agua se ha vuelto más conductora", "El ánodo de magnesio se está consumiendo o pasivando", "El acero se ha vuelto más noble", "La temperatura ha bajado drásticamente"], correctAnswer: 1, explanation: "Con el tiempo, el ánodo de sacrificio se consume, reduciendo su tamaño y eficiencia. También puede desarrollar una película pasiva en su superficie, lo que aumenta su resistencia y reduce la salida de corriente." },
+                { question: "El objetivo final del experimento galvánico es demostrar que al aumentar la Icp, la Icorr...", options: ["Aumenta", "No se ve afectada", "Puede ser reducida a cero", "Se vuelve alterna"], correctAnswer: 2, explanation: "El experimento está diseñado para mostrar que existe una relación inversa entre la corriente de protección y la de corrosión, y que aplicando suficiente corriente de protección, la corrosión puede ser completamente mitigada (Icorr = 0)." }
+            ],
+            // Set 3: Ejercicios con Corriente Impresa
+            [
+                { question: "EJERCICIO: En el Experimento 3.2, usas una batería de 6V como fuente de poder y la conectas a través de un resistor de 1,000 Ω. ¿Cuál es la Icp calculada?", options: ["6 A", "60 mA", "0.6 mA", "6 mA"], correctAnswer: 3, explanation: "Asumiendo que la resistencia del resto del circuito es despreciable, Icp = V / R = 6 V / 1,000 Ω = 0.006 A, que es igual a 6 mA." },
+                { question: "EJERCICIO: Con la misma batería de 6V, cambias al resistor de 100 Ω. ¿Cuál es la nueva Icp?", options: ["600 mA", "60 mA", "6 mA", "0.6 A"], correctAnswer: 1, explanation: "Icp = V / R = 6 V / 100 Ω = 0.06 A, que es igual a 60 mA." },
+                { question: "EJERCICIO: Mides una caída de voltaje de 5V a través del resistor de 10,000 Ω. ¿Cuál es la Icp?", options: ["5 mA", "500 µA (0.5 mA)", "50 mA", "0.05 mA"], correctAnswer: 1, explanation: "Icp = V / R = 5 V / 10,000 Ω = 0.0005 A, que es igual a 500 µA o 0.5 mA." },
+                { question: "SIMULACIÓN: Con el sistema de corriente impresa, logras una Icp de 50 mA y mides que la Icorr se ha reducido a cero. ¿Qué significa?", options: ["Que el sistema no es lo suficientemente potente", "Que se ha alcanzado la protección catódica total", "Que hay un cortocircuito", "Que la batería está agotada"], correctAnswer: 1, explanation: "Si la corriente de corrosión es cero, significa que la corriente impresa está contrarrestando completamente la tendencia a la corrosión de la celda Acero-Cobre." },
+                { question: "SIMULACIÓN: El potencial polarizado del acero alcanza -1200 mV con el sistema de corriente impresa. En el sistema galvánico, solo llegaba a -900 mV. ¿Por qué?", options: ["El agua es diferente", "El sistema de corriente impresa tiene un voltaje de impulso mayor y ajustable", "El cobre se ha vuelto más activo", "Es un error de medición"], correctAnswer: 1, explanation: "La batería proporciona un voltaje de impulso mucho mayor que la diferencia de potencial natural entre el magnesio y el acero, permitiendo forzar más corriente y alcanzar un mayor nivel de polarización." },
+                { question: "EJERCICIO: Si quieres una Icp de 25 mA y estás usando una batería de 5V, ¿qué resistor necesitas?", options: ["200 Ω", "20 Ω", "2,000 Ω", "500 Ω"], correctAnswer: 0, explanation: "R = V / I. Convierte 25 mA a 0.025 A. R = 5 V / 0.025 A = 200 Ω." },
+                { question: "En el montaje de corriente impresa, el ánodo (la segunda pieza de acero) se consume con el tiempo.", options: ["Verdadero", "Falso"], correctAnswer: 1, explanation: "Verdadero. Aunque los ánodos de corriente impresa están diseñados para un bajo consumo, siguen siendo el lugar donde ocurre la oxidación para completar el circuito de protección, por lo que se consumen lentamente." },
+                { question: "SIMULACIÓN: Conectas la batería al revés (positivo a la estructura, negativo al ánodo). ¿Qué pasará con la corrosión del acero original?", options: ["Se detendrá", "No cambiará", "Se acelerará drásticamente", "Se protegerá el cobre"], correctAnswer: 2, explanation: "Conectar la batería al revés convertiría la estructura que quieres proteger (acero) en un ánodo forzado, causando una corrosión extremadamente rápida en lugar de protección." },
+                { question: "La principal conclusión al comparar los dos experimentos es que los sistemas de corriente impresa ofrecen...", options: ["Menor control y menor potencia", "Mayor control y mayor potencia", "La misma potencia pero menos control", "Un costo siempre menor"], correctAnswer: 1, explanation: "Los sistemas de corriente impresa permiten un control preciso sobre la corriente de salida y pueden suministrar niveles de corriente y voltaje mucho más altos que los sistemas galvánicos." },
+                { question: "EJERCICIO: Mides una caída de voltaje de 1.2 V a través de un resistor de 100 Ω en el circuito de corriente impresa. ¿Cuánta corriente de protección se está aplicando?", options: ["120 mA", "1.2 mA", "12 mA", "0.12 mA"], correctAnswer: 2, explanation: "Icp = V / R = 1.2 V / 100 Ω = 0.012 A, que es igual a 12 mA." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+        let lastCorrectIndex = -1; // Variable to track the last correct answer's position
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            lastCorrectIndex = -1; // Reset for each new game
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            // --- Logic to shuffle answers ---
+            const correctAnswerText = question.options[question.correctAnswer];
+            let shuffledOptions;
+            let newCorrectIndex;
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            do {
+                shuffledOptions = shuffleArray([...question.options]);
+                newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+            } while (currentQuestionIndex > 0 && newCorrectIndex === lastCorrectIndex && question.options.length > 1);
+            
+            lastCorrectIndex = newCorrectIndex;
+            // --- End of shuffle logic ---
+
+            answersContainer.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button, newCorrectIndex);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button, correctIndex) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                answersContainer.children[correctIndex].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            selectSet(currentSetIndex);
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
