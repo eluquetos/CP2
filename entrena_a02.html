@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Química Básica y Teoría Básica de Corrosión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-3xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Química Básica y Teoría Básica de Corrosión</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Estructura Atómica</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Iones, pH y Electroquímica</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: La Celda de Corrosión</button>
+                <button onclick="selectSet(3)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 4: Procesos y Reacciones</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Estructura Atómica
+            [
+                { question: "Según la definición de NACE, la corrosión es el deterioro de un material, usualmente un metal, que resulta de una reacción con su...", options: ["Temperatura", "Presión", "Entorno", "Estructura interna"], correctAnswer: 2, explanation: "La corrosión es fundamentalmente una reacción química o electroquímica entre un material y su entorno circundante." },
+                { question: "¿De qué se compone el núcleo de un átomo?", options: ["Electrones y protones", "Solo electrones", "Protones y neutrones", "Solo neutrones"], correctAnswer: 2, explanation: "El núcleo atómico contiene las partículas con masa significativa: los protones (con carga positiva) y los neutrones (sin carga)." },
+                { question: "En un átomo eléctricamente neutro, el número de protones es igual al número de...", options: ["Neutrones", "Iones", "Moléculas", "Electrones"], correctAnswer: 3, explanation: "Para que un átomo sea neutro, la carga positiva total de los protones en el núcleo debe ser equilibrada por una cantidad igual de carga negativa de los electrones que lo orbitan." },
+                { question: "¿Qué partícula del átomo tiene una carga negativa?", options: ["Protón", "Neutrón", "Electrón", "Núcleo"], correctAnswer: 2, explanation: "Los electrones son las partículas que orbitan el núcleo y llevan una carga eléctrica negativa." },
+                { question: "¿Qué es un elemento químico?", options: ["La unidad más pequeña de una sustancia", "Un tipo de molécula", "Uno de los bloques de construcción fundamentales de la materia, compuesto de átomos", "Una mezcla de diferentes átomos"], correctAnswer: 2, explanation: "Los elementos (como el hierro, oxígeno, hidrógeno) son las sustancias puras fundamentales que componen toda la materia." },
+                { question: "¿Qué es una molécula?", options: ["Un átomo con carga eléctrica", "La partícula más pequeña de un elemento", "La unidad más pequeña de una sustancia, compuesta de dos o más átomos", "El núcleo de un átomo"], correctAnswer: 2, explanation: "Una molécula se forma cuando dos o más átomos se unen mediante enlaces químicos, como la molécula de agua (H₂O)." },
+                { question: "¿Qué fuerza mantiene unidos a los átomos dentro de una molécula?", options: ["Gravedad", "Fuerza magnética", "Enlace químico", "Presión"], correctAnswer: 2, explanation: "El enlace químico es la fuerza de atracción que mantiene unidos a los átomos para formar compuestos o moléculas." },
+                { question: "La electroquímica es la rama de la química que trata con los cambios químicos que acompañan el paso de...", options: ["Calor", "Luz", "Una corriente eléctrica", "Sonido"], correctAnswer: 2, explanation: "La electroquímica estudia la interrelación entre las reacciones químicas y la energía eléctrica, ya sea produciendo una corriente o siendo causada por ella." },
+                { question: "Los protones son partículas con carga...", options: ["Negativa", "Neutra", "Positiva", "Variable"], correctAnswer: 2, explanation: "Los protones, ubicados en el núcleo, son las partículas que definen la carga positiva de un átomo." },
+                { question: "Los neutrones son partículas con carga...", options: ["Positiva", "Neutra", "Negativa", "Positiva y negativa"], correctAnswer: 1, explanation: "Los neutrones se encuentran en el núcleo junto con los protones y, como su nombre indica, no tienen carga eléctrica (son neutros)." }
+            ],
+            // Set 2: Iones, pH y Electroquímica
+            [
+                { question: "¿Cómo se forma un ion?", options: ["Cuando un átomo gana o pierde neutrones", "Cuando un átomo se divide", "Cuando un átomo gana o pierde electrones", "Cuando un átomo se une a otro"], correctAnswer: 2, explanation: "Un ion es un átomo que ha adquirido una carga eléctrica neta al ganar (anión) o perder (catión) uno o más electrones." },
+                { question: "Un catión es un ion con carga ____, formado por la ____ de electrones.", options: ["negativa / ganancia", "positiva / pérdida", "neutra / transferencia", "positiva / ganancia"], correctAnswer: 1, explanation: "Cuando un átomo pierde electrones (que son negativos), le queda un exceso de protones (positivos), resultando en un ion con carga positiva llamado catión." },
+                { question: "Un anión es un ion con carga ____, formado por la ____ de electrones.", options: ["positiva / pérdida", "negativa / ganancia", "negativa / pérdida", "positiva / ganancia"], correctAnswer: 1, explanation: "Cuando un átomo gana electrones adicionales, adquiere un exceso de carga negativa, convirtiéndose en un ion con carga negativa llamado anión." },
+                { question: "¿Qué es el pH?", options: ["Una medida de la concentración de iones de oxígeno", "Una medida de la acidez o alcalinidad de una solución", "Una medida de la temperatura", "Una medida de la presión hidrostática"], correctAnswer: 1, explanation: "El pH es una escala que mide la concentración de iones de hidrógeno en una solución, determinando si es ácida, neutra o alcalina (básica)." },
+                { question: "Una solución con un pH de 3 es considerada...", options: ["Neutra", "Alcalina", "Ligeramente ácida", "Fuertemente ácida"], correctAnswer: 3, explanation: "La escala de pH va de 0 a 14. Un pH por debajo de 7 es ácido, y un valor de 3 es significativamente ácido." },
+                { question: "Una solución con un pH de 11 es considerada...", options: ["Neutra", "Ácida", "Alcalina", "Ligeramente ácida"], correctAnswer: 2, explanation: "Un pH por encima de 7 es alcalino o básico. Un valor de 11 indica una solución alcalina." },
+                { question: "El punto neutro en la escala de pH es...", options: ["0", "14", "7", "1"], correctAnswer: 2, explanation: "Un pH de 7, como el del agua pura, se considera neutro porque la concentración de iones de hidrógeno (H⁺) y de iones hidroxilo (OH⁻) es igual." },
+                { question: "Una solución con pH 5 es ____ veces más ácida que una solución con pH 6.", options: ["2", "5", "10", "100"], correctAnswer: 2, explanation: "La escala de pH es logarítmica. Cada unidad de cambio representa un cambio de diez veces en la acidez. Por lo tanto, un pH 5 es diez veces más ácido que un pH 6." },
+                { question: "La oxidación es un proceso electroquímico que implica la ____ de electrones.", options: ["ganancia", "pérdida", "transferencia neutra", "creación"], correctAnswer: 1, explanation: "La oxidación es la pérdida de electrones por parte de un átomo o molécula, lo que resulta en un aumento de su estado de oxidación (se vuelve más positivo)." },
+                { question: "La reducción es un proceso electroquímico que implica la ____ de electrones.", options: ["pérdida", "anulación", "ganancia", "destrucción"], correctAnswer: 2, explanation: "La reducción es la ganancia de electrones por parte de un átomo o molécula, lo que resulta en una disminución de su estado de oxidación (se vuelve más negativo)." }
+            ],
+            // Set 3: La Celda de Corrosión
+            [
+                { question: "¿Cómo se llama el electrodo donde ocurre la oxidación en una celda de corrosión?", options: ["Cátodo", "Electrolito", "Ánodo", "Ruta metálica"], correctAnswer: 2, explanation: "El ánodo es, por definición, el sitio donde ocurre la oxidación, que es el proceso de pérdida de metal (corrosión)." },
+                { question: "¿Cómo se llama el electrodo donde ocurre la reducción en una celda de corrosión?", options: ["Ánodo", "Cátodo", "Ion", "Molécula"], correctAnswer: 1, explanation: "El cátodo es el sitio donde ocurre la reducción (ganancia de electrones). En el cátodo no hay pérdida de metal; de hecho, está protegido." },
+                { question: "¿Cuáles son las cuatro partes esenciales de una celda de corrosión?", options: ["Ácido, Base, Sal, Agua", "Ánodo, Cátodo, Electrolito, Ruta Metálica", "Hierro, Cobre, Zinc, Aluminio", "Voltaje, Corriente, Resistencia, Potencia"], correctAnswer: 1, explanation: "Para que la corrosión electroquímica ocurra, se necesitan estos cuatro componentes: un ánodo (donde se corroe), un cátodo (donde se protege), un electrolito (para el flujo de iones) y una ruta metálica (para el flujo de electrones)." },
+                { question: "¿Cuál es la función del electrolito en la celda de corrosión?", options: ["Permitir el flujo de electrones", "Ser el sitio de la corrosión", "Ser una solución ionizada que conduce electricidad", "Bloquear la corriente"], correctAnswer: 2, explanation: "El electrolito (como el suelo húmedo o el agua) es un medio que contiene iones y permite que estos se muevan entre el ánodo y el cátodo, completando así el circuito eléctrico." },
+                { question: "¿Cuál es la función de la ruta metálica en la celda de corrosión?", options: ["Permitir el flujo de iones", "Disolverse para formar el electrolito", "Conectar el ánodo y el cátodo para permitir el flujo de electrones", "Aislar el ánodo del cátodo"], correctAnswer: 2, explanation: "La ruta metálica es el conductor eléctrico (a menudo el propio metal de la estructura) que permite a los electrones liberados en el ánodo viajar hasta el cátodo." },
+                { question: "En la corrosión del hierro, el átomo de hierro (Fe) se oxida para formar un ion de hierro (Fe²⁺) y libera...", options: ["Dos protones", "Dos neutrones", "Dos electrones", "Un átomo de oxígeno"], correctAnswer: 2, explanation: "La reacción anódica para el hierro es Fe → Fe²⁺ + 2e⁻. El átomo de hierro pierde dos electrones para convertirse en un ion de hierro." },
+                { question: "En un ambiente neutro, la reacción catódica más común es la reducción de...", options: ["Iones metálicos", "Oxígeno", "Cloruros", "Sulfatos"], correctAnswer: 1, explanation: "En soluciones neutras o alcalinas, la reacción de reducción más común en el cátodo involucra al oxígeno y al agua para formar iones hidroxilo: 2H₂O + O₂ + 4e⁻ → 4OH⁻." },
+                { question: "En un ambiente ácido, la reacción catódica más común es la reducción de...", options: ["Iones hidroxilo", "Oxígeno", "Iones de hidrógeno", "Agua"], correctAnswer: 2, explanation: "En ambientes ácidos, hay una alta concentración de iones de hidrógeno (H⁺), por lo que la reacción de reducción predominante es la ganancia de electrones por parte de estos iones: H⁺ + e⁻ → H." },
+                { question: "El flujo de electrones en el circuito externo (ruta metálica) va desde...", options: ["El cátodo hacia el ánodo", "El ánodo hacia el cátodo", "El electrolito hacia el ánodo", "El cátodo hacia el electrolito"], correctAnswer: 1, explanation: "Los electrones son liberados en el ánodo (oxidación) y viajan a través del conductor metálico hacia el cátodo, donde son consumidos en la reacción de reducción." },
+                { question: "La transferencia de carga en el electrolito se debe al movimiento de...", options: ["Electrones", "Neutrones", "Iones (cationes y aniones)", "Moléculas de agua"], correctAnswer: 2, explanation: "A diferencia de los metales, los líquidos no conducen electrones libremente. La corriente en el electrolito es transportada por el movimiento de iones cargados: cationes (+) hacia el cátodo y aniones (-) hacia el ánodo." }
+            ],
+            // Set 4: Procesos y Reacciones
+            [
+                { question: "Metales como el aluminio y el plomo que se corroen tanto en ambientes ácidos como alcalinos se denominan...", options: ["Metales nobles", "Metales pasivos", "Metales anfóteros", "Metales ferrosos"], correctAnswer: 2, explanation: "Los metales anfóteros son aquellos cuya película de óxido protectora se disuelve tanto en ácidos fuertes como en bases fuertes, lo que provoca un aumento de la corrosión en ambos extremos del espectro de pH." },
+                { question: "En la corrosión del acero, ¿por qué la tasa de corrosión disminuye a un pH superior a 8?", options: ["Porque el acero se vuelve más fuerte", "Porque el ambiente se vuelve pasivo para el acero", "Porque el agua se evapora", "Porque el oxígeno desaparece"], correctAnswer: 1, explanation: "A pH alcalino, el acero tiende a formar una película de óxido protectora (pasiva) en su superficie, lo que reduce significativamente la velocidad de corrosión." },
+                { question: "La aplicación de protección catódica hace que el pH en la superficie de la estructura (el cátodo) se vuelva...", options: ["Más ácido", "Más alcalino", "Neutro", "No cambia"], correctAnswer: 1, explanation: "La reacción catódica consume iones de hidrógeno (en ácidos) o produce iones hidroxilo (en neutros). Ambos procesos eliminan ácido o crean base, lo que resulta en un aumento del pH (se vuelve más alcalino) en la superficie del cátodo." },
+                { question: "¿Por qué la sobreprotección catódica puede ser perjudicial para los metales anfóteros?", options: ["Porque consume demasiada corriente", "Porque el aumento del pH en la superficie puede causar corrosión alcalina", "Porque los enfría demasiado", "Porque los vuelve magnéticos"], correctAnswer: 1, explanation: "Una corriente catódica excesiva puede elevar el pH en la superficie del metal a niveles muy altos. Si el metal es anfótero (como el aluminio), este ambiente altamente alcalino lo corroerá." },
+                { question: "En la reacción de corrosión del hierro (Fe → Fe²⁺ + 2e⁻), el hierro está siendo...", options: ["Reducido", "Oxidado", "Neutralizado", "Pasivado"], correctAnswer: 1, explanation: "El hierro pierde electrones, por lo que está sufriendo una reacción de oxidación. Este es el proceso de corrosión." },
+                { question: "En la reacción catódica (2H₂O + O₂ + 4e⁻ → 4OH⁻), el oxígeno está siendo...", options: ["Oxidado", "Ionizado", "Reducido", "Disuelto"], correctAnswer: 2, explanation: "El oxígeno gana electrones (suministrados desde el ánodo) para formar iones hidroxilo, por lo que está sufriendo una reacción de reducción." },
+                { question: "¿Puede ocurrir la corrosión en el cátodo de una celda de corrosión?", options: ["Sí, siempre ocurre ahí", "Solo si el metal es noble", "No, por definición la corrosión no ocurre en el cátodo", "Sí, pero muy lentamente"], correctAnswer: 2, explanation: "El cátodo es el sitio donde los electrones son consumidos (reducción). La pérdida de metal (oxidación) ocurre exclusivamente en el ánodo. Por lo tanto, el cátodo está inherentemente protegido." },
+                { question: "Los iones son relativamente pesados y lentos en comparación con los electrones. Esto causa que los electrolitos tengan una resistividad mucho ____ que los metales.", options: ["más baja", "más alta", "igual", "más variable"], correctAnswer: 1, explanation: "El movimiento de iones masivos a través de un líquido es mucho menos eficiente que el flujo de electrones casi sin masa a través de una red metálica. Por eso, la resistividad de los electrolitos es órdenes de magnitud mayor que la de los metales." },
+                { question: "El fenómeno causado por la lenta movilidad de los iones en el electrolito se llama...", options: ["Conductividad", "Pasivación", "Oxidación", "Polarización"], correctAnswer: 3, explanation: "La polarización es un cambio en el potencial de un electrodo debido a la acumulación de productos de reacción o al agotamiento de reactivos en su superficie, a menudo relacionado con la lenta difusión de iones en el electrolito." },
+                { question: "En la formación de sal de mesa (NaCl), el sodio (Na) pierde un electrón y el cloro (Cl) lo gana. ¿Cuál se oxida y cuál se reduce?", options: ["Ambos se oxidan", "Sodio se oxida, Cloro se reduce", "Cloro se oxida, Sodio se reduce", "Ambos se reducen"], correctAnswer: 1, explanation: "El sodio pierde un electrón (se oxida) para formar Na⁺. El cloro gana ese electrón (se reduce) para formar Cl⁻. Luego, los iones se atraen electrostáticamente." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+        let lastCorrectIndex = -1; // Variable to track the last correct answer's position
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            lastCorrectIndex = -1; // Reset for each new game
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            // --- Logic to shuffle answers ---
+            const correctAnswerText = question.options[question.correctAnswer];
+            let shuffledOptions;
+            let newCorrectIndex;
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            do {
+                shuffledOptions = shuffleArray([...question.options]);
+                newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+            } while (currentQuestionIndex > 0 && newCorrectIndex === lastCorrectIndex && question.options.length > 1);
+            
+            lastCorrectIndex = newCorrectIndex;
+            // --- End of shuffle logic ---
+
+            answersContainer.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button, newCorrectIndex);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button, correctIndex) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                answersContainer.children[correctIndex].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            startGame();
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
