@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Corrientes Vagabundas e Interferencias de PC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-3xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Corrientes Vagabundas e Interferencias de PC</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Conceptos Fundamentales</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Detección y Tipos</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Análisis de Interferencias</button>
+                <button onclick="selectSet(3)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 4: Métodos de Mitigación</button>
+                <button onclick="selectSet(4)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg lg:col-span-3">Nivel 5: Interferencias de CA</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Conceptos Fundamentales
+            [
+                { question: "¿Qué es una corriente vagabunda (stray current)?", options: ["La corriente galvánica normal de una estructura", "Corriente que fluye por rutas distintas al circuito previsto", "Corriente alterna de bajo voltaje", "Corriente generada por el sol"], correctAnswer: 1, explanation: "Las corrientes vagabundas o de interferencia son aquellas que provienen de una fuente externa y fluyen a través de rutas no deseadas, como una tubería enterrada, en lugar de su circuito original." },
+                { question: "¿Por qué son especialmente peligrosas las corrientes vagabundas de CC?", options: ["Porque son difíciles de medir", "Porque causan una pérdida de metal significativa según la Ley de Faraday", "Porque solo afectan al aluminio", "Porque siempre son de bajo amperaje"], correctAnswer: 1, explanation: "Según la Ley de Faraday, una corriente vagabunda de CC puede causar una pérdida de metal muy rápida. Por ejemplo, 1 amperio de CC puede consumir 9.1 kg (20 lbs) de acero en un año." },
+                { question: "¿En qué punto una corriente vagabunda causa daño por corrosión a una estructura?", options: ["Donde la corriente entra a la estructura", "Donde la corriente sale de la estructura hacia el electrolito", "A lo largo de toda la estructura por igual", "No causa daño por corrosión"], correctAnswer: 1, explanation: "La corrosión severa ocurre en el punto de descarga, donde la corriente abandona la estructura para regresar a su fuente a través del electrolito (suelo). El punto de entrada (recogida) a menudo recibe protección catódica." },
+                { question: "Las corrientes vagabundas se clasifican en dos tipos principales. ¿Cuáles son?", options: ["Altas y Bajas", "Internas y Externas", "Peligrosas y Seguras", "Estáticas y Dinámicas"], correctAnswer: 3, explanation: "Se clasifican como estáticas (constantes en amplitud y ruta, como las de otros sistemas de PC) o dinámicas (variables en amplitud y/o dirección, como las de sistemas de tránsito)." },
+                { question: "¿Qué es una corriente vagabunda 'estática'?", options: ["Una corriente que no se mueve", "Una corriente que varía constantemente", "Una corriente que mantiene una amplitud y ruta geográfica constantes", "Una corriente de origen natural"], correctAnswer: 2, explanation: "Las corrientes estáticas o de estado estable son predecibles y constantes, siendo la fuente más común otros sistemas de protección catódica por corriente impresa cercanos." },
+                { question: "¿Qué es una corriente vagabunda 'dinámica'?", options: ["Una corriente que nunca cambia", "Una corriente que varía en amplitud y/o dirección con el tiempo", "Una corriente generada por baterías", "Una corriente que solo fluye de noche"], correctAnswer: 1, explanation: "Las corrientes dinámicas son impredecibles y fluctúan constantemente. Fuentes comunes incluyen sistemas de tránsito de CC, operaciones mineras y corrientes telúricas." },
+                { question: "¿Cuál es el objetivo principal del análisis de corrientes vagabundas?", options: ["Solo medir su voltaje", "Ignorarlas si son pequeñas", "Identificar la fuente, las áreas de recogida y descarga, y cómo mitigarlas", "Aumentar la corriente en la estructura"], correctAnswer: 2, explanation: "Un análisis completo busca entender de dónde viene la corriente, por dónde entra y sale de la estructura afectada, su magnitud y, lo más importante, cómo se puede controlar para prevenir daños." },
+                { question: "La pérdida de metal por 1 amperio de corriente vagabunda de CC en un año es de aproximadamente 9.1 kg para el acero y ____ para el plomo.", options: ["1 kg", "5 kg", "15.2 kg", "33.9 kg (75 lbs)"], correctAnswer: 3, explanation: "El plomo es mucho más susceptible a la pérdida de metal por corriente de CC. 1 amperio puede consumir casi 34 kg de plomo en un año, lo que lo hace extremadamente vulnerable." },
+                { question: "¿Qué son las corrientes telúricas?", options: ["Corrientes de sistemas de soldadura", "Corrientes de fugas de líneas de alta tensión", "Corrientes naturales causadas por la actividad solar y el campo magnético de la Tierra", "Corrientes de sistemas de PC cercanos"], correctAnswer: 2, explanation: "Son corrientes vagabundas dinámicas de origen natural, inducidas en estructuras largas por fluctuaciones en el campo geomagnético de la Tierra, a menudo relacionadas con la actividad de manchas solares." },
+                { question: "La interferencia de un sistema de PC sobre una estructura ajena es un ejemplo de corriente vagabunda...", options: ["Dinámica", "Telúrica", "De CA", "Estática"], correctAnswer: 3, explanation: "La corriente de un rectificador de PC es constante (CC) y su ruta es fija, por lo que cualquier interferencia que cause en una estructura cercana se clasifica como estática o de estado estable." }
+            ],
+            // Set 2: Detección y Tipos
+            [
+                { question: "¿Cuál es una señal clara de la presencia de corrientes vagabundas dinámicas al medir potenciales?", options: ["Un potencial muy estable y constante", "Un potencial que fluctúa con el tiempo con el electrodo de referencia fijo", "Un potencial siempre positivo", "Un potencial de -850 mV exacto"], correctAnswer: 1, explanation: "La característica principal de la interferencia dinámica es la inestabilidad. Si el potencial estructura-electrolito cambia erráticamente mientras el electrodo está quieto, es un fuerte indicio de corrientes vagabundas dinámicas." },
+                { question: "En una interferencia 'catódica', la estructura afectada se encuentra en el gradiente de potencial ____ de la estructura interferente.", options: ["Anódico (positivo)", "Neutro", "Catódico (negativo)", "No hay gradiente"], correctAnswer: 2, explanation: "La interferencia catódica ocurre cuando la estructura afectada está en el gradiente catódico (negativo) de la estructura protegida. Esto fuerza a la estructura afectada a descargar corriente en esa zona." },
+                { question: "En la interferencia catódica, ¿dónde ocurre la recogida de corriente en la estructura afectada?", options: ["En el área de influencia del gradiente", "Fuera del área de influencia del gradiente", "No recoge corriente", "A lo largo de toda la estructura"], correctAnswer: 1, explanation: "Para que la corriente pueda descargarse en el área de interferencia, debe ser recogida en áreas que están fuera de la influencia del gradiente de potencial negativo." },
+                { question: "En una interferencia 'anódica', la estructura afectada se encuentra en el gradiente de potencial ____ del sistema interferente.", options: ["Anódico (positivo)", "Catódico (negativo)", "Cero", "Variable"], correctAnswer: 0, explanation: "La interferencia anódica ocurre cuando la estructura afectada pasa a través del gradiente anódico (positivo) del lecho de ánodos del sistema de PC interferente. Esto causa que la estructura afectada recoja corriente en esa zona." },
+                { question: "En la interferencia anódica, ¿dónde ocurre la descarga de corriente (corrosión) en la estructura afectada?", options: ["En el área de influencia del gradiente (cerca de los ánodos)", "Fuera del área de influencia del gradiente", "No descarga corriente", "En los puntos más altos"], correctAnswer: 1, explanation: "La corriente recogida en la zona del gradiente anódico debe salir de la estructura en algún otro punto. La corrosión ocurrirá en estas áreas de descarga, que están fuera de la influencia del lecho anódico." },
+                { question: "Una fuente común de corrientes vagabundas dinámicas en áreas urbanas es...", options: ["Tuberías de agua", "Líneas de gas", "Sistemas de tránsito eléctrico de CC (trenes, tranvías)", "Edificios altos"], correctAnswer: 2, explanation: "Los sistemas de tránsito que usan rieles como retorno de corriente de CC son una fuente notoria de corrientes vagabundas dinámicas, ya que la corriente de retorno a menudo 'vaga' por el suelo y las tuberías cercanas." },
+                { question: "Al detectar interferencia estática de un rectificador cercano, un cambio en el potencial de la estructura afectada al encender y apagar el rectificador indica...", options: ["Que no hay interferencia", "Que hay interferencia", "Que el medidor está dañado", "Que el suelo está seco"], correctAnswer: 1, explanation: "La prueba definitiva es ver si el estado de la estructura afectada cambia cuando la fuente sospechosa se enciende y se apaga. Si el potencial cambia, existe una conexión electrolítica (interferencia)." },
+                { question: "En un área de descarga de corriente (corrosión), el cambio de potencial en la estructura afectada al encender el rectificador interferente será...", options: ["Más negativo (swing negativo)", "No cambiará", "Menos negativo o más positivo (swing positivo)", "Se volverá cero"], correctAnswer: 2, explanation: "En el punto de descarga, la estructura se vuelve más anódica. Por lo tanto, su potencial se desplazará en la dirección positiva (o menos negativa) cuando la fuente de interferencia esté encendida." },
+                { question: "En un área de recogida de corriente, el cambio de potencial en la estructura afectada al encender el rectificador interferente será...", options: ["Más negativo (swing negativo)", "Menos negativo (swing positivo)", "No cambiará", "Se volverá inestable"], correctAnswer: 0, explanation: "En el punto donde la estructura recoge corriente, se vuelve más catódica. Su potencial se desplazará en la dirección negativa cuando la fuente de interferencia esté encendida." },
+                { question: "Para analizar corrientes vagabundas dinámicas, a menudo se requiere...", options: ["Una sola medición de potencial", "Una inspección visual", "El registro continuo de datos (24 horas) con un data logger", "Una muestra de suelo"], correctAnswer: 2, explanation: "Debido a su naturaleza fluctuante, una sola medición no es suficiente. Se necesita un registro de datos a largo plazo (24h o más) para capturar los picos máximos y mínimos y entender el patrón de la interferencia." }
+            ],
+            // Set 3: Análisis de Interferencias
+            [
+                { question: "¿Qué ley de Kirchhoff se utiliza para analizar la recogida y descarga de corriente a lo largo de una tubería?", options: ["Ley de Voltaje", "Ley de Ohm", "Ley de Corriente", "Ley de Faraday"], correctAnswer: 2, explanation: "La Ley de Corriente de Kirchhoff establece que la suma de las corrientes que entran en un nodo debe ser igual a la suma de las que salen. La diferencia de corriente medida entre dos puntos de una tubería representa la corriente que ha sido recogida o descargada en ese tramo." },
+                { question: "Si la corriente medida en el punto A es de 2A hacia el este y en el punto B (al este de A) es de 5A hacia el este, ¿qué ocurrió entre A y B?", options: ["Se descargaron 3A", "Se recogieron 3A", "No pasó nada", "Se descargaron 7A"], correctAnswer: 1, explanation: "La corriente aumentó de 2A a 5A en la misma dirección. Esto significa que 3A de corriente entraron a la tubería desde el suelo en el tramo entre A y B (recogida de corriente)." },
+                { question: "Si la corriente en el punto C es de 6A hacia el este y en el punto D (al este de C) es de 1A hacia el este, ¿qué ocurrió entre C y D?", options: ["Se recogieron 5A", "Se descargaron 5A", "Se recogieron 7A", "No pasó nada"], correctAnswer: 1, explanation: "La corriente disminuyó de 6A a 1A. Esto significa que 5A de corriente salieron de la tubería hacia el suelo en ese tramo (descarga de corriente y, por lo tanto, corrosión)." },
+                { question: "Al realizar pruebas de interferencia, ¿por qué es crucial NO asumir que el potencial 'ON' siempre es el más negativo?", options: ["Porque el medidor puede estar invertido", "En un área de descarga de corriente, el potencial 'ON' será menos negativo que el 'OFF'", "Porque la temperatura afecta la lectura", "Porque el potencial 'ON' siempre es cero"], correctAnswer: 1, explanation: "En un área de recogida, el potencial 'ON' es más negativo. Pero en un área de descarga (corrosión), la interferencia hace que el potencial se vuelva más positivo, por lo que el potencial 'ON' será menos negativo que el 'OFF'." },
+                { question: "Si el potencial 'ON' de una estructura ajena es -650 mV y el 'OFF' es -890 mV, ¿qué está ocurriendo?", options: ["Recogida de corriente (interferencia anódica)", "Descarga de corriente (interferencia catódica)", "No hay interferencia", "Un corto metálico"], correctAnswer: 1, explanation: "El potencial se vuelve más positivo (de -890 a -650 mV) cuando la fuente está encendida. Este 'swing positivo' es la firma de una descarga de corriente y, por lo tanto, de una condición de corrosión por interferencia." },
+                { question: "Si el potencial 'ON' de una estructura ajena es -1300 mV y el 'OFF' es -1000 mV, ¿qué está ocurriendo?", options: ["Descarga de corriente", "No hay interferencia", "Recogida de corriente", "Corrosión catódica"], correctAnswer: 2, explanation: "El potencial se vuelve más negativo (de -1000 a -1300 mV) cuando la fuente está encendida. Este 'swing negativo' indica que la estructura está recogiendo corriente en ese punto." },
+                { question: "Para resolver un problema de interferencia, el primer paso suele ser...", options: ["Instalar un bono de inmediato", "Ajustar la salida de corriente del sistema interferente si es posible", "Pintar la tubería afectada", "Ignorar el problema"], correctAnswer: 1, explanation: "La solución más simple y a menudo efectiva es intentar reducir la salida de corriente del rectificador que causa la interferencia a un nivel que siga protegiendo la estructura original pero que minimice el efecto sobre la estructura ajena." },
+                { question: "Un 'bono de mitigación' (mitigation bond) es...", options: ["Un tipo de recubrimiento", "Una conexión metálica entre la estructura afectada y la interferente", "Un ánodo galvánico", "Una multa por causar interferencia"], correctAnswer: 1, explanation: "Un bono es un cable que proporciona una ruta metálica de baja resistencia para que la corriente vagabunda regrese a su fuente, en lugar de descargarse a través del suelo y causar corrosión." },
+                { question: "En un bono para corrientes dinámicas, a menudo se instala un diodo o un interruptor de corriente inversa para...", options: ["Aumentar la resistencia del bono", "Prevenir que la corriente fluya en la dirección incorrecta", "Medir la corriente del bono", "Disipar el calor"], correctAnswer: 1, explanation: "Si la polaridad de la interferencia puede invertirse (como en los sistemas de tránsito), se necesita un dispositivo unidireccional para asegurar que el bono solo drene corriente de la estructura afectada y nunca la alimente." },
+                { question: "Si una tubería bien recubierta interfiere con una tubería desnuda, un bono metálico directo puede...", options: ["Resolver siempre el problema", "No tener ningún efecto", "Empeorar el problema al aumentar la descarga de corriente", "Proteger ambas tuberías"], correctAnswer: 2, explanation: "Conectar una tubería bien recubierta (pequeño cátodo) a una desnuda (gran cátodo) puede aumentar la densidad de corriente en la tubería desnuda, empeorando la interferencia. En estos casos, otras soluciones como ánodos localizados son mejores." }
+            ],
+            // Set 4: Métodos de Mitigación
+            [
+                { question: "¿Cuál es una de las formas de resolver problemas de interferencia sin usar un bono?", options: ["Aumentar la salida del rectificador", "Instalar ánodos galvánicos en el punto de descarga de la estructura afectada", "Quitar el recubrimiento de la estructura afectada", "Conectar ambas estructuras a tierra"], correctAnswer: 1, explanation: "En lugar de drenar la corriente, se puede 'contrarrestar' su efecto. Instalar ánodos galvánicos en el área de descarga de la estructura afectada puede proporcionar una fuente local de corriente de protección para mitigar la corrosión." },
+                { question: "Recubrir el área de ____ de corriente en la estructura afectada puede reducir la interferencia.", options: ["Descarga", "Recogida", "Mayor profundidad", "Menor profundidad"], correctAnswer: 1, explanation: "Aplicar un buen recubrimiento en el área donde la estructura afectada recoge la corriente de interferencia reducirá la cantidad de corriente que entra, y por lo tanto, la cantidad que necesita salir en otro lugar." },
+                { question: "¿Por qué NO se debe recubrir el área de descarga de corriente?", options: ["Porque es muy costoso", "Porque el recubrimiento no se adhiere", "Porque concentrará la descarga en los pequeños defectos, causando picaduras rápidas", "Porque el manual no lo recomienda"], correctAnswer: 2, explanation: "Recubrir un área anódica es extremadamente peligroso. Cualquier pequeño defecto en el nuevo recubrimiento concentrará toda la corriente de descarga en un área diminuta, lo que llevará a una perforación muy rápida (pitting)." },
+                { question: "En un bono de mitigación, a menudo se incluye una resistencia variable para...", options: ["Generar calor", "Controlar y limitar la cantidad de corriente drenada", "Bloquear la corriente de CA", "Medir el voltaje"], correctAnswer: 1, explanation: "Una resistencia en el bono permite ajustar finamente la cantidad de corriente que se drena, de modo que se mitigue la interferencia sin drenar una cantidad excesiva de corriente de protección del sistema original." },
+                { question: "Un 'bono forzado' (forced drainage bond) utiliza ____ para drenar activamente la corriente.", options: ["Ánodos galvánicos", "Un rectificador o una fuente de poder controlada", "Un capacitor", "Un diodo de alta potencia"], correctAnswer: 1, explanation: "En lugar de un drenaje pasivo, un bono forzado utiliza una fuente de poder externa (como un rectificador) para 'forzar' el drenaje de la corriente de la estructura afectada, especialmente útil en casos de interferencia severa." },
+                { question: "Relocalizar el lecho anódico del sistema interferente, ¿puede ayudar a mitigar la interferencia?", options: ["No, no tiene efecto", "Sí, alejarlo de la estructura afectada puede reducir el gradiente de potencial", "Solo si se acerca más", "No, solo cambiar la estructura afectada funciona"], correctAnswer: 1, explanation: "La fuerza del gradiente de potencial disminuye con la distancia. Alejar el lecho anódico de la estructura ajena es una solución de diseño efectiva para reducir la severidad de la interferencia anódica." },
+                { question: "Si se instala un bono, ¿qué efecto puede tener sobre el sistema de PC original?", options: ["Aumentará su efectividad", "Puede reducir el nivel de protección de la estructura original", "No tendrá ningún efecto", "Hará que el rectificador se apague"], correctAnswer: 1, explanation: "Un bono proporciona una ruta de retorno adicional para la corriente del rectificador. Esto puede 'robar' corriente que estaba destinada a la estructura original, por lo que puede ser necesario aumentar la salida del rectificador para compensar." },
+                { question: "¿Qué es una celda de polarización?", options: ["Un tipo de batería", "Un dispositivo de desacoplamiento de CC que permite el paso de CA y fallas de alto voltaje", "Un electrodo de referencia especial", "Un dispositivo para medir la polarización"], correctAnswer: 1, explanation: "Es un dispositivo electroquímico que actúa como un interruptor. Bloquea las corrientes de PC de bajo voltaje (CC), pero se vuelve conductor para permitir el paso de corrientes de CA o fallas de alto voltaje a tierra, protegiendo el aislamiento y al personal." },
+                { question: "Los dispositivos de estado sólido (PCR) son una alternativa moderna a las celdas de polarización porque...", options: ["Son más grandes", "Usan un electrolito líquido", "No requieren mantenimiento con electrolitos y son más compactos", "Son menos efectivos"], correctAnswer: 2, explanation: "Los reemplazos de celdas de polarización (PCR) de estado sólido realizan la misma función de desacoplamiento de CC y puesta a tierra de seguridad, pero sin los inconvenientes de las celdas de polarización tradicionales, como el electrolito cáustico y el mantenimiento." },
+                { question: "Para mitigar el riesgo de 'voltaje de paso y contacto' por CA inducida, se pueden instalar...", options: ["Más rectificadores", "Recubrimientos más gruesos", "Mallas de puesta a tierra (ground mats)", "Aisladores adicionales"], correctAnswer: 2, explanation: "En lugares donde el personal puede tocar una estructura con alto voltaje de CA inducido (como una válvula), se instalan mallas metálicas enterradas y conectadas a la tubería. Esto iguala el potencial entre los pies de la persona y la tubería, previniendo un shock eléctrico." }
+            ],
+            // Set 5: Interferencias de CA
+            [
+                { question: "¿La corriente alterna (CA) vagabunda puede causar corrosión?", options: ["No, la CA es inofensiva para los metales", "Sí, aunque generalmente a una tasa menor que una cantidad equivalente de CC", "Solo en el cobre", "Sí, y es mucho más corrosiva que la CC"], correctAnswer: 1, explanation: "Aunque la mayor parte del daño por corrosión es causado por la CC, la CA también puede causar una pérdida de metal significativa, especialmente a altas densidades de corriente y en ciertos metales como el aluminio." },
+                { question: "El principal peligro asociado con las corrientes vagabundas de CA en tuberías es...", options: ["La corrosión acelerada del acero", "El riesgo de shock eléctrico para el personal", "El daño al recubrimiento", "La interferencia con las señales de radio"], correctAnswer: 1, explanation: "Voltajes de CA inducidos superiores a 15V se consideran peligrosos y pueden causar un shock eléctrico grave o fatal a cualquiera que entre en contacto con la tubería o sus apéndices." },
+                { question: "¿Qué es el acoplamiento 'electromagnético' o 'inductivo'?", options: ["Un contacto directo con la línea de alta tensión", "La tubería actúa como el secundario de un transformador, con la línea de alta tensión como el primario", "La tubería actúa como un capacitor", "Una fuga de corriente a través del suelo"], correctAnswer: 1, explanation: "Esto ocurre cuando una tubería corre paralela a una línea de alta tensión. El campo magnético de la línea de CA induce un voltaje en la tubería, de la misma manera que un transformador induce voltaje en su bobinado secundario." },
+                { question: "El voltaje inducido por electromagnetismo en una tubería es mayor cuando la tubería y la línea eléctrica son...", options: ["Perpendiculares", "Paralelas y están muy separadas", "Paralelas y están muy juntas", "De diferentes longitudes"], correctAnswer: 2, explanation: "La inducción es más fuerte cuanto más largo es el paralelismo y menor es la distancia de separación entre la línea de alta tensión y la tubería." },
+                { question: "¿En qué puntos a lo largo de un paralelismo se esperan los picos más altos de voltaje de CA inducido?", options: ["En el punto medio del paralelismo", "Donde la tubería está más profunda", "En las discontinuidades, como donde el paralelismo comienza y termina", "Donde el suelo es más seco"], correctAnswer: 2, explanation: "Los voltajes inducidos tienden a acumularse y ser más altos en los puntos de discontinuidad, como los extremos del tramo paralelo donde la tubería y la línea eléctrica se separan." },
+                { question: "¿Qué es un 'desacoplador de CC' (DC decoupler)?", options: ["Un dispositivo que bloquea toda la corriente", "Un dispositivo que bloquea la CC pero permite el paso de la CA", "Un tipo de fusible", "Un interruptor manual"], correctAnswer: 1, explanation: "Un desacoplador, como una celda de polarización o un PCR, se usa para aislar la tubería de la tierra para la corriente de protección catódica (CC), pero proporciona una ruta a tierra para las corrientes de CA inducidas, mitigando el riesgo de shock." },
+                { question: "Para mitigar la CA inducida, se pueden conectar ánodos galvánicos distribuidos a la tubería para...", options: ["Aumentar el voltaje de CA", "Aislar la tubería del suelo", "Disminuir la resistencia de la tubería a tierra y drenar la corriente de CA", "Generar más corriente de CC"], correctAnswer: 2, explanation: "Conectar ánodos galvánicos (como zinc o magnesio) a la tubería reduce su resistencia efectiva a tierra. Esto proporciona una ruta para que la corriente de CA inducida se drene de manera segura al suelo, reduciendo el voltaje en la tubería." },
+                { question: "Si se mide un voltaje de 15 VCA o más en una estructura, ¿qué se debe hacer?", options: ["Continuar trabajando normalmente", "Considerarlo una situación peligrosa y tomar medidas de mitigación", "Aumentar la salida del rectificador", "Medir el voltaje de CC"], correctAnswer: 1, explanation: "Un voltaje de 15 VCA es el umbral de seguridad comúnmente aceptado. Voltajes superiores a este nivel se consideran peligrosos y requieren la implementación de medidas de mitigación para proteger al personal." },
+                { question: "El acoplamiento 'resistivo' de CA ocurre principalmente durante...", options: ["La operación normal de la línea eléctrica", "La noche", "Una falla de la línea eléctrica a tierra", "La construcción de la tubería"], correctAnswer: 2, explanation: "Este tipo de acoplamiento ocurre cuando una línea de alta tensión tiene una falla y descarga una corriente masiva a tierra. Esta corriente puede fluir a través del suelo y ser recogida por una tubería cercana." },
+                { question: "Una malla de puesta a tierra (ground mat) protege al personal al...", options: ["Bloquear la corriente de CA", "Reducir el voltaje en la tubería a cero", "Igualar el potencial entre los pies de una persona y la tubería que está tocando", "Aislar completamente la tubería"], correctAnswer: 2, explanation: "La malla, conectada a la tubería, asegura que el suelo donde está parado el técnico y la tubería que está tocando estén al mismo potencial. Esto previene que una corriente peligrosa fluya a través del cuerpo de la persona." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+        let lastCorrectIndex = -1; // Variable to track the last correct answer's position
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            lastCorrectIndex = -1; // Reset for each new game
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            // --- Logic to shuffle answers ---
+            const correctAnswerText = question.options[question.correctAnswer];
+            let shuffledOptions;
+            let newCorrectIndex;
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            do {
+                shuffledOptions = shuffleArray([...question.options]);
+                newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+            } while (currentQuestionIndex > 0 && newCorrectIndex === lastCorrectIndex && question.options.length > 1);
+            
+            lastCorrectIndex = newCorrectIndex;
+            // --- End of shuffle logic ---
+
+            answersContainer.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button, newCorrectIndex);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button, correctIndex) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                answersContainer.children[correctIndex].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            startGame();
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
