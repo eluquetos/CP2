@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Operación de los medidores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-3xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Operación de los medidores</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Tipos y Principios</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Medidores Analógicos</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Medidores Digitales</button>
+                <button onclick="selectSet(3)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 4: Aplicaciones y Conexiones</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Tipos y Principios
+            [
+                { question: "¿Cuáles son las dos clasificaciones principales de un medidor según su funcionamiento interno?", options: ["Grande y Pequeño", "Analógico y Digital", "Electromecánico y Electrónico", "De Voltaje y de Corriente"], correctAnswer: 2, explanation: "Un medidor se clasifica por su mecanismo interno, que puede ser un movimiento electromecánico (como en los medidores analógicos tradicionales) o un circuito electrónico (como en los medidores digitales)." },
+                { question: "¿Qué tipo de pantalla proporciona una representación continua del valor medido mediante una aguja?", options: ["Pantalla Digital", "Pantalla Híbrida", "Pantalla Electrónica", "Pantalla Analógica"], correctAnswer: 3, explanation: "La pantalla analógica utiliza una aguja o puntero que se mueve a lo largo de una escala calibrada para indicar la magnitud de la medición de forma continua." },
+                { question: "¿Cómo se llama el movimiento básico de un medidor analógico?", options: ["Movimiento de D'Arsonval", "Movimiento de Newton", "Movimiento Browniano", "Movimiento Electrónico"], correctAnswer: 0, explanation: "El movimiento de D'Arsonval es el sistema fundamental de un medidor analógico, que consiste en una bobina móvil que gira dentro del campo de un imán permanente." },
+                { question: "En un movimiento de D'Arsonval, la corriente eléctrica se convierte en...", options: ["Luz", "Calor", "Fuerza mecánica", "Sonido"], correctAnswer: 2, explanation: "El principio de funcionamiento es que la corriente que fluye por la bobina crea un campo magnético que interactúa con el imán permanente, generando una fuerza mecánica que hace girar la bobina y la aguja." },
+                { question: "¿De dónde proviene la energía necesaria para operar un medidor analógico de D'Arsonval?", options: ["De una batería interna", "De la red eléctrica", "Del propio circuito que se está midiendo", "Del sol"], correctAnswer: 2, explanation: "Un medidor analógico pasivo no tiene fuente de poder propia; extrae la pequeña cantidad de energía que necesita para mover la aguja directamente del circuito bajo prueba." },
+                { question: "¿Cuál es la función de la resistencia de amortiguación (damping resistor) en un medidor analógico?", options: ["Aumentar el rango de medición", "Reducir la sobre-oscilación de la aguja", "Proteger el medidor de sobrecargas", "Convertir CA a CC"], correctAnswer: 1, explanation: "La resistencia de amortiguación ayuda a que la aguja se estabilice rápidamente en la lectura correcta, evitando que oscile excesivamente alrededor del valor final." },
+                { question: "Un medidor digital muestra el valor medido como...", options: ["Una aguja en una escala", "Una gráfica continua", "Dígitos discretos", "Una luz intermitente"], correctAnswer: 2, explanation: "La principal característica de un medidor digital es su pantalla, que presenta la medición como números (dígitos) discretos, eliminando la necesidad de interpretación de una escala." },
+                { question: "La operación de un medidor digital se basa en tecnología de...", options: ["Engranajes y resortes", "Imanes y bobinas", "Microcircuitos integrados", "Tubos de vacío"], correctAnswer: 2, explanation: "Los medidores digitales utilizan circuitos electrónicos complejos, incluyendo microprocesadores y convertidores de analógico a digital, para procesar y mostrar la medición." },
+                { question: "En un multímetro digital (DMM), todas las mediciones (corriente, resistencia) se convierten primero a ____ antes de la conversión a digital.", options: ["Corriente CA", "Voltaje CC", "Frecuencia", "Temperatura"], correctAnswer: 1, explanation: "El núcleo de un DMM es un voltímetro de CC. Para medir otras magnitudes, el medidor primero las convierte internamente a un voltaje de CC proporcional antes de procesarlas." },
+                { question: "El valor que muestra un medidor digital es...", options: ["Una representación continua y en tiempo real", "Una muestra del valor de entrada, tomada varias veces por segundo", "El valor máximo medido", "El valor promedio del último minuto"], correctAnswer: 1, explanation: "A diferencia de un medidor analógico, un medidor digital toma 'muestras' rápidas del voltaje de entrada y las muestra. Aunque esto sucede muy rápido, no es una lectura continua." }
+            ],
+            // Set 2: Medidores Analógicos
+            [
+                { question: "Para usar un medidor analógico como voltímetro, se colocan resistores en ____ con la bobina móvil.", options: ["Paralelo", "Serie", "Cortocircuito", "Un circuito abierto"], correctAnswer: 1, explanation: "Para medir voltaje, se añaden resistores de alto valor en serie con la bobina. Estos resistores limitan la corriente y 'dividen' el voltaje, permitiendo medir voltajes más altos de los que la bobina podría soportar sola." },
+                { question: "Para usar un medidor analógico como amperímetro, se colocan resistores (shunts) en ____ con la bobina móvil.", options: ["Serie", "Paralelo", "Un circuito abierto", "Serie y paralelo"], correctAnswer: 1, explanation: "Para medir corrientes altas, se coloca un resistor de muy bajo valor (shunt) en paralelo con la bobina. La mayor parte de la corriente pasa por el shunt, y solo una pequeña fracción controlada pasa por la bobina." },
+                { question: "Para que la aguja de un medidor analógico se mueva hacia arriba en la escala (upscale), la corriente debe entrar por el terminal...", options: ["Negativo", "Positivo", "De tierra", "Cualquiera de los dos"], correctAnswer: 1, explanation: "Los medidores analógicos son sensibles a la polaridad. Para obtener una lectura correcta, la corriente convencional debe fluir desde el terminal positivo hacia el negativo del medidor." },
+                { question: "Un ohmímetro analógico mide la resistencia al...", options: ["Medir el voltaje de la fuente externa", "Usar una fuente de voltaje interna y medir la corriente resultante", "Calcular la resistencia a partir de la temperatura", "Comparar con una resistencia conocida"], correctAnswer: 1, explanation: "Un ohmímetro contiene su propia batería. Aplica un voltaje conocido al componente bajo prueba y mide la corriente que fluye. Luego, usa la Ley de Ohm (R=V/I) para mostrar el resultado en una escala de resistencia." },
+                { question: "¿Por qué un ohmímetro no es adecuado para medir la resistencia de una brida aislante enterrada?", options: ["Porque el voltaje de la batería es muy alto", "Porque el medidor no es lo suficientemente preciso", "Porque existe una ruta paralela a través del electrolito (suelo)", "Porque la brida es metálica"], correctAnswer: 2, explanation: "El ohmímetro medirá la resistencia combinada de la brida y la ruta paralela a través del suelo, dando una lectura falsamente baja si la brida está bien aislada. Además, el potencial natural entre las dos secciones de la tubería interfiere con la medición." },
+                { question: "Al seleccionar un rango de voltaje mayor en un voltímetro analógico, se está cambiando a un resistor en serie de valor...", options: ["Más bajo", "Más alto", "Igual", "Cero"], correctAnswer: 1, explanation: "Para medir un voltaje mayor, se necesita limitar más la corriente que llega a la bobina. Esto se logra seleccionando un resistor en serie de mayor valor óhmico." },
+                { question: "Al seleccionar un rango de corriente mayor en un amperímetro analógico, se está cambiando a un resistor shunt de valor...", options: ["Más alto", "Más bajo", "Igual", "Infinito"], correctAnswer: 1, explanation: "Para medir una corriente mayor, se necesita desviar una porción aún mayor de la corriente lejos de la bobina. Esto se logra usando un resistor shunt con una resistencia aún más baja." },
+                { question: "¿Qué sucede si se intenta medir una corriente muy grande en un medidor analógico sin el shunt adecuado?", options: ["La aguja no se moverá", "La lectura será inexacta", "La delicada bobina móvil puede quemarse y destruirse", "El imán permanente se debilitará"], correctAnswer: 2, explanation: "La bobina móvil está diseñada para corrientes muy pequeñas. Una corriente excesiva la sobrecalentará y la destruirá permanentemente." },
+                { question: "La energía para mover la aguja de un voltímetro analógico...", options: ["Es suministrada por una batería interna", "Se toma del circuito que se está midiendo, lo que puede afectar ligeramente el circuito", "Es suministrada por el campo magnético de la Tierra", "No requiere energía"], correctAnswer: 1, explanation: "El medidor analógico es una 'carga' en el circuito. Extrae una pequeña cantidad de corriente para funcionar, lo que puede alterar ligeramente el voltaje que se intenta medir, un efecto conocido como 'carga del medidor'." },
+                { question: "La escala de un ohmímetro analógico es típicamente...", options: ["Lineal", "Logarítmica", "No lineal (comprimida en un extremo)", "Exponencial"], correctAnswer: 2, explanation: "Debido a la relación inversa entre resistencia y corriente (I=V/R), la escala de un ohmímetro analógico no es lineal. Los valores de alta resistencia están más juntos que los de baja resistencia." }
+            ],
+            // Set 3: Medidores Digitales
+            [
+                { question: "¿Cómo convierte un medidor digital una señal de entrada analógica a un valor digital?", options: ["Usando un movimiento de D'Arsonval", "Usando un convertidor Analógico-a-Digital (A-to-D)", "Midiendo la temperatura de la señal", "Comparando la señal con una referencia de CA"], correctAnswer: 1, explanation: "El componente clave es el convertidor A-to-D, un circuito electrónico que muestrea el voltaje analógico y lo convierte en un número binario que luego se muestra como dígitos decimales." },
+                { question: "Una ventaja principal de los medidores digitales sobre los analógicos es que...", options: ["No requieren baterías", "Son más resistentes a los golpes", "Eliminan el error de interpretación del operador", "Funcionan mejor con voltajes fluctuantes"], correctAnswer: 2, explanation: "Al mostrar un número exacto, los medidores digitales eliminan la subjetividad y el posible error de paralaje al leer una aguja en una escala." },
+                { question: "Una desventaja de los medidores digitales, especialmente en áreas con corrientes vagabundas, es que...", options: ["Sus baterías se agotan rápidamente", "Puede ser difícil leer un valor específico de los números que fluctúan rápidamente", "Son menos precisos que los analógicos", "No pueden medir voltajes negativos"], correctAnswer: 1, explanation: "Como el medidor digital intenta mostrar cada muestra, un voltaje inestable (como el causado por corrientes vagabundas) hará que los dígitos cambien constantemente, dificultando la obtención de una lectura estable." },
+                { question: "Si la corriente entra por el terminal negativo de un medidor digital, la pantalla mostrará...", options: ["Un valor positivo", "Un signo de negativo (-) junto al valor", "Un error", "Cero"], correctAnswer: 1, explanation: "Los medidores digitales tienen una función de 'auto-polaridad'. Detectan la dirección del flujo de corriente y muestran un signo negativo si la polaridad es inversa a la conexión de los terminales." },
+                { question: "Para obtener la polaridad correcta al medir un potencial tubería-suelo con un medidor digital, el electrodo de referencia se conecta al terminal...", options: ["Positivo (+)", "Negativo (-)", "De tierra", "De ohmios"], correctAnswer: 1, explanation: "Por convención en protección catódica, los potenciales de las estructuras son negativos. Para que el medidor digital muestre este valor negativo correctamente, la estructura se conecta al terminal positivo y el electrodo de referencia al negativo." },
+                { question: "El concepto de 'resistencia de entrada' en un medidor digital se refiere a...", options: ["La resistencia de los cables de prueba", "La resistencia interna del medidor cuando mide voltaje", "La resistencia de la batería", "La resistencia física de la carcasa"], correctAnswer: 1, explanation: "La resistencia de entrada es la resistencia que el propio medidor presenta al circuito cuando está configurado para medir voltaje. Debe ser muy alta para no alterar el circuito." },
+                { question: "Un multímetro digital (DMM) moderno típicamente tiene una resistencia de entrada de...", options: ["100 ohmios", "1,000 ohmios", "10,000 ohmios", "10 megaohmios (10,000,000 ohmios) o más"], correctAnswer: 3, explanation: "Los DMMs están diseñados con una resistencia de entrada muy alta (típicamente 10 MΩ) para minimizar el efecto de 'carga del medidor' y asegurar mediciones de voltaje precisas." },
+                { question: "Si un medidor digital muestra 'OL' en su pantalla, ¿qué significa usualmente?", options: ["Batería baja (Low Battery)", "La medición es cero", "Sobrecarga (Overload) - el valor es mayor al rango seleccionado", "El medidor está dañado"], correctAnswer: 2, explanation: "'OL' significa 'Overload' o 'Out of Limits'. Indica que el valor que se está intentando medir excede el máximo del rango seleccionado en el medidor." },
+                { question: "¿Por qué un medidor analógico puede ser preferible a uno digital para observar tendencias o picos rápidos?", options: ["Porque es más preciso", "Porque el movimiento de la aguja puede mostrar la dirección y velocidad de un cambio más intuitivamente", "Porque no necesita baterías", "Porque tiene más rangos"], correctAnswer: 1, explanation: "El movimiento suave de una aguja analógica puede facilitar la visualización de la dirección, la velocidad y la naturaleza de una fluctuación, algo que puede ser difícil de interpretar con dígitos que cambian rápidamente." },
+                { question: "La precisión de un medidor digital se especifica generalmente como...", options: ["Un porcentaje del rango total", "Un número fijo de voltios", "Un porcentaje de la lectura más un número de dígitos", "Buena, regular o mala"], correctAnswer: 2, explanation: "La especificación de precisión de un DMM combina un error porcentual de la lectura actual con un error fijo basado en el dígito menos significativo, por ejemplo: ±(0.5% de la lectura + 2 dígitos)." }
+            ],
+            // Set 4: Aplicaciones y Conexiones
+            [
+                { question: "Para determinar la dirección del flujo de corriente con un medidor analógico, se observa...", options: ["El color de la aguja", "Si la aguja se mueve hacia arriba (upscale), la corriente entra por el terminal positivo", "La temperatura del medidor", "El rango seleccionado"], correctAnswer: 1, explanation: "Si la aguja se mueve correctamente (de izquierda a derecha), significa que la corriente convencional está fluyendo hacia el terminal positivo y saliendo por el negativo." },
+                { question: "Para obtener una lectura de polaridad correcta de un potencial tubería-suelo (ej. -0.850V) con un medidor digital, ¿cómo se conectan los cables?", options: ["Cable de la tubería al (-), cable de referencia al (+)", "Cable de la tubería al (+), cable de referencia al (-)", "Ambos al mismo terminal", "No importa la conexión"], correctAnswer: 1, explanation: "La convención estándar es conectar el cable de la estructura al terminal positivo (rojo) y el cable del electrodo de referencia al terminal negativo/común (negro). El medidor mostrará el signo negativo correcto." },
+                { question: "Al contrario, para obtener una lectura 'upscale' (positiva) del mismo potencial con un medidor analógico, ¿cómo se conectan los cables?", options: ["Cable de la tubería al (-), cable de referencia al (+)", "Cable de la tubería al (+), cable de referencia al (-)", "Ambos al terminal positivo", "No se puede medir con un analógico"], correctAnswer: 0, explanation: "Para que la aguja de un medidor analógico se mueva en la dirección correcta (upscale) al medir un potencial negativo, se debe invertir la conexión: la estructura (negativa) se conecta al terminal negativo y la referencia (el punto 'cero') al positivo." },
+                { question: "Si se conecta un voltímetro digital a través de un resistor y muestra -1.5V, significa que...", options: ["El resistor está dañado", "El terminal positivo del medidor está en el punto de menor potencial del resistor", "El terminal positivo del medidor está en el punto de mayor potencial del resistor", "Hay corriente alterna presente"], correctAnswer: 1, explanation: "Un voltaje negativo indica que el punto conectado al terminal positivo del medidor tiene un potencial más bajo que el punto conectado al terminal negativo. La corriente fluye del punto de mayor al de menor potencial." },
+                { question: "Al usar un ohmímetro para verificar la continuidad de un cable, una lectura cercana a cero ohmios indica que el cable...", options: ["Está roto (circuito abierto)", "Tiene alta resistencia", "Está en buen estado (continuo)", "Está en cortocircuito con otro cable"], correctAnswer: 2, explanation: "Un buen conductor debe tener una resistencia muy baja. Una lectura cercana a cero en un ohmímetro confirma que el cable no está roto y puede conducir la corriente." },
+                { question: "Si al medir la continuidad de un cable con un ohmímetro la lectura es 'OL' o infinita, indica que el cable...", options: ["Está en buen estado", "Tiene baja resistencia", "Está roto (circuito abierto)", "Es demasiado largo"], correctAnswer: 2, explanation: "Una resistencia infinita ('OL') significa que no hay un camino para la corriente, lo que indica que el cable está roto en algún punto." },
+                { question: "Al medir voltajes, es una práctica de seguridad importante...", options: ["Tocar las puntas metálicas para asegurar un buen contacto", "Usar siempre el rango más bajo primero", "NO tocar las partes metálicas de las puntas de prueba", "Lamer las puntas para mejorar la conductividad"], correctAnswer: 2, explanation: "Nunca se deben tocar las partes metálicas expuestas de las puntas de prueba o los cables, ya que el cuerpo podría convertirse en parte del circuito, resultando en un shock eléctrico." },
+                { question: "Si se sospecha que hay voltajes fluctuantes, ¿qué tipo de medidor podría dar una mejor idea de la situación general?", options: ["Un ohmímetro", "Un medidor digital con función de 'hold'", "Un medidor analógico", "Un amperímetro de pinza"], correctAnswer: 2, explanation: "El movimiento de la aguja de un medidor analógico puede mostrar visualmente la amplitud y la velocidad de las fluctuaciones, lo que puede ser más informativo que ver números digitales cambiando rápidamente." },
+                { question: "La principal razón por la que los ohmímetros no son fiables para probar aisladores en campo es la presencia de...", options: ["Alta humedad", "Baja temperatura", "Voltajes de CC naturales entre las estructuras", "Campos magnéticos"], correctAnswer: 2, explanation: "Las dos estructuras metálicas separadas por un aislador casi siempre tienen una diferencia de potencial natural entre ellas. Este voltaje interfiere con el pequeño voltaje de la batería del ohmímetro, haciendo la lectura de resistencia completamente errónea." },
+                { question: "El movimiento de la aguja de un medidor analógico es proporcional a la ____ que pasa por su bobina.", options: ["Resistencia", "Corriente", "Capacitancia", "Temperatura"], correctAnswer: 1, explanation: "El principio fundamental del medidor de D'Arsonval es que el ángulo de deflexión de la aguja es directamente proporcional a la corriente que fluye a través de su bobina móvil." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+        let lastCorrectIndex = -1; // Variable to track the last correct answer's position
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            lastCorrectIndex = -1; // Reset for each new game
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            // --- Logic to shuffle answers ---
+            const correctAnswerText = question.options[question.correctAnswer];
+            let shuffledOptions;
+            let newCorrectIndex;
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            do {
+                shuffledOptions = shuffleArray([...question.options]);
+                newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+            } while (currentQuestionIndex > 0 && newCorrectIndex === lastCorrectIndex && question.options.length > 1);
+            
+            lastCorrectIndex = newCorrectIndex;
+            // --- End of shuffle logic ---
+
+            answersContainer.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button, newCorrectIndex);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button, correctIndex) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                answersContainer.children[correctIndex].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            // FIX: Call selectSet to properly re-initialize the game state
+            selectSet(currentSetIndex);
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
