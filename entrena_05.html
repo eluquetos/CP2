@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Seguridad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-3xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Seguridad</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Principios y Peligros Generales</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Seguridad Eléctrica y LOTO</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Peligros Específicos y Mitigación</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Principios y Peligros Generales
+            [
+                { question: "El propósito de un Análisis de Seguridad del Trabajo (JSA) es...", options: ["Calcular el costo del proyecto", "Identificar peligros y determinar medidas preventivas para cada paso del trabajo", "Asignar tareas a los trabajadores", "Acelerar el proyecto"], correctAnswer: 1, explanation: "Un JSA es un proceso para identificar los peligros asociados con cada paso de un trabajo y desarrollar soluciones para mitigar esos riesgos antes de comenzar." },
+                { question: "¿Cuál de los siguientes es un peligro eléctrico común en el trabajo de protección catódica?", options: ["Ruido excesivo", "Voltajes de CA peligrosos en las estructuras", "Suelo resbaladizo", "Exposición al sol"], correctAnswer: 1, explanation: "Las estructuras metálicas, especialmente las tuberías cerca de líneas de alta tensión, pueden tener voltajes de CA inducidos que son un grave peligro de shock eléctrico." },
+                { question: "El umbral de percepción de la corriente eléctrica en un ser humano es generalmente de...", options: ["100 mA", "10 A", "1 mA", "50 mA"], correctAnswer: 2, explanation: "Generalmente se acepta que 1 miliamperio (mA) es la corriente más baja que una persona puede sentir." },
+                { question: "La corriente 'let-go' (corriente que impide soltar) se encuentra en el rango de...", options: ["1-5 mA", "9-25 mA", "50-100 mA", "Más de 1 A"], correctAnswer: 1, explanation: "En este rango de corriente, los músculos pueden contraerse de forma involuntaria, haciendo imposible que la persona se suelte del objeto energizado." },
+                { question: "Antes de tocar la carcasa de un rectificador, ¿qué se debe hacer siempre?", options: ["Limpiarla con un paño húmedo", "Verificar que no esté energizada usando un detector de voltaje o un voltímetro", "Asegurarse de que esté pintada", "Golpearla para ver si suena hueca"], correctAnswer: 1, explanation: "Siempre se debe asumir que la carcasa podría estar energizada por una falla a tierra. Es crucial verificar con un dispositivo apropiado que es seguro tocarla." },
+                { question: "¿Qué significa LOTO?", options: ["Bajo Voltaje, Tarea Abierta", "Localizar y Operar con Tiento", "Bloqueo y Etiquetado (Lock Out / Tag Out)", "Luz Operativa, Tarea Terminada"], correctAnswer: 2, explanation: "LOTO es un procedimiento de seguridad para asegurar que los equipos peligrosos estén correctamente apagados y no se puedan volver a encender antes de completar el trabajo de mantenimiento o servicio." },
+                { question: "Un área designada como 'eléctricamente peligrosa' es un lugar donde...", options: ["Hay muchos cables en el suelo", "Puede existir una mezcla de hidrocarburos explosiva", "El voltaje es superior a 600V", "Se requiere el uso de guantes"], correctAnswer: 1, explanation: "Estas áreas requieren que el equipo eléctrico esté en cajas a prueba de explosión para evitar que un arco eléctrico pueda encender una atmósfera inflamable." },
+                { question: "Un peligro importante al cortar una tubería con protección catódica activa es...", options: ["El ruido del corte", "La generación de un arco eléctrico que puede causar una ignición", "La pérdida de producto", "El daño a la herramienta de corte"], correctAnswer: 1, explanation: "La tubería transporta la corriente de retorno de la PC. Cortarla sin un puente eléctrico puede crear un arco voltaico peligroso, especialmente si hay una atmósfera combustible." },
+                { question: "Además de los peligros eléctricos, ¿cuál es otro peligro común listado en el manual?", options: ["Peligros de viaje (vehículos, ATVs, helicópteros)", "Peligros de la radiación solar", "Peligros de la alta presión", "Peligros ergonómicos"], correctAnswer: 0, explanation: "El manual lista explícitamente los peligros asociados con el transporte hacia y desde los sitios de trabajo, que a menudo son remotos." },
+                { question: "¿Quién es la persona autorizada para retirar un dispositivo de bloqueo (candado) en un procedimiento LOTO?", options: ["Cualquier supervisor", "El último trabajador en abandonar el sitio", "La persona que lo instaló", "El gerente de seguridad"], correctAnswer: 2, explanation: "Una regla fundamental de LOTO es que solo la persona que colocó su candado y etiqueta personal tiene la autoridad para retirarlo." }
+            ],
+            // Set 2: Seguridad Eléctrica y LOTO
+            [
+                { question: "Una corriente superior a ____ se considera potencialmente mortal debido a la fibrilación ventricular del corazón.", options: ["10 mA", "25 mA", "100 mA", "50 mA"], correctAnswer: 2, explanation: "Corrientes superiores a 100 mA que pasan por el pecho pueden interrumpir el ritmo del corazón (fibrilación ventricular), lo que a menudo es fatal." },
+                { question: "Si la resistencia de una persona es de 1000 Ω y entra en contacto con 120 VCA, ¿qué corriente pasará por su cuerpo?", options: ["12 mA", "1.2 A", "120 A", "120 mA"], correctAnswer: 3, explanation: "Usando la Ley de Ohm (I = V/R), la corriente sería I = 120 V / 1000 Ω = 0.120 A, que es igual a 120 mA, una cantidad potencialmente letal." },
+                { question: "Apagar el interruptor automático (circuit breaker) en el panel frontal de un rectificador...", options: ["Hace que todo el rectificador sea seguro para trabajar", "Solo desenergiza los componentes después del interruptor; la entrada de CA sigue viva", "Desconecta la energía de toda la instalación", "También apaga la salida de CC"], correctAnswer: 1, explanation: "El interruptor del panel solo corta la energía a los componentes internos del rectificador. Los terminales de entrada de CA que llegan al interruptor permanecen energizados." },
+                { question: "Para desenergizar completamente un rectificador y trabajar de forma segura en su interior, se debe...", options: ["Apagar y bloquear/etiquetar el desconectador de CA externo", "Solo apagar el interruptor del panel", "Desconectar los cables de CC", "Esperar 10 minutos después de apagarlo"], correctAnswer: 0, explanation: "La única forma segura es desconectar la fuente de alimentación principal de CA que alimenta al rectificador y aplicar un procedimiento LOTO." },
+                { question: "Si varias personas están trabajando en el mismo equipo, ¿qué dispositivo LOTO se debe usar?", options: ["Un solo candado con varias llaves", "Una etiqueta de 'Peligro' grande", "Un dispositivo de bloqueo tipo tijera (scissor-type lock)", "Cada persona trabaja en un momento diferente"], correctAnswer: 2, explanation: "Un dispositivo de bloqueo múltiple, como el de tipo tijera, permite que cada trabajador coloque su propio candado personal, asegurando que la energía no se restablezca hasta que la última persona haya retirado su candado." },
+                { question: "Para evitar un arco eléctrico al cortar una tubería, ¿qué se debe instalar?", options: ["Un aislante alrededor del corte", "Un puente eléctrico temporal (bonding jumper) a través del corte", "Un extintor de incendios cerca", "Ropa ignífuga"], correctAnswer: 1, explanation: "Un puente eléctrico proporciona una ruta alternativa y segura para que la corriente de PC fluya alrededor del área de corte, evitando la formación de un arco peligroso cuando la tubería se separa." },
+                { question: "Según el manual, un voltaje de CA inducido en una estructura se considera peligroso si excede los...", options: ["5 V", "120 V", "50 V", "15 V"], correctAnswer: 3, explanation: "15 VCA es el umbral comúnmente aceptado. Cualquier voltaje por encima de este nivel requiere medidas de mitigación para proteger al personal." },
+                { question: "Al acercarse a una estructura cerca de una línea de alta tensión, ¿qué medición se debe realizar PRIMERO?", options: ["El potencial CC tubería-suelo", "La resistividad del suelo", "El voltaje CA estructura-tierra", "La corriente en la tubería"], correctAnswer: 2, explanation: "La seguridad es lo primero. Siempre se debe verificar la presencia de voltajes de CA peligrosos antes de realizar cualquier otra medición o de tocar la estructura." },
+                { question: "Al medir el voltaje CA estructura-tierra, se debe evitar...", options: ["Usar un electrodo de referencia", "Tocar directamente el circuito de medición", "Usar un medidor digital", "Anotar la lectura"], correctAnswer: 1, explanation: "Se deben usar puntas de prueba y clips aislados, y aplicar el método de una sola mano para evitar que el cuerpo se convierta en parte del circuito en caso de que haya un voltaje peligroso." },
+                { question: "El procedimiento LOTO es importante porque...", options: ["Es una buena sugerencia, pero no obligatoria", "Asegura que la energía no se pueda restablecer accidentalmente mientras alguien está trabajando", "Solo se aplica a equipos de alto voltaje", "Ayuda a que el equipo funcione mejor"], correctAnswer: 1, explanation: "El propósito fundamental de LOTO es la protección personal, garantizando que una máquina o circuito permanezca desenergizado hasta que sea seguro volver a encenderlo." }
+            ],
+            // Set 3: Peligros Específicos y Mitigación
+            [
+                { question: "¿Qué NACE Standard se menciona como referencia para la mitigación de efectos de CA y rayos?", options: ["RP0169", "RP0502", "RP0177", "RP0285"], correctAnswer: 2, explanation: "NACE Standard RP0177, 'Mitigation of Alternating Current and Lightning Effects on Metallic Structures and Corrosion Control Systems', es el documento clave sobre este tema." },
+                { question: "¿Qué se debe hacer si se encuentra un voltaje de 15 VCA o más en una estructura?", options: ["Continuar con el trabajo con más cuidado", "Considerarlo peligroso y detener el trabajo hasta que se mitigue el voltaje", "Usar guantes de goma y continuar", "Anotarlo en el informe y seguir con la siguiente tarea"], correctAnswer: 1, explanation: "Un voltaje de 15 VCA o más es un peligro inmediato. El trabajo debe detenerse y se deben tomar medidas para reducir el voltaje a un nivel seguro antes de continuar." },
+                { question: "Al trabajar en excavaciones, ¿qué se requiere si las paredes no tienen la inclinación adecuada?", options: ["Trabajar más rápido", "Usar un casco", "Instalar apuntalamiento (shoring)", "Bombear el agua fuera"], correctAnswer: 2, explanation: "Las regulaciones de seguridad exigen que las zanjas y excavaciones estén debidamente inclinadas o, en su defecto, que se utilice un sistema de apuntalamiento o cajas de zanja para prevenir derrumbes." },
+                { question: "¿Qué son las Hojas de Datos de Seguridad de Materiales (MSDS)?", options: ["Instrucciones de instalación del material", "Documentos que proporcionan información sobre los peligros de los productos químicos", "Certificados de garantía del material", "Listas de precios de los materiales"], correctAnswer: 1, explanation: "Las MSDS (o SDS) contienen información vital sobre los peligros, manejo seguro, y procedimientos de emergencia para productos químicos como el sulfato de cobre o los electrolitos de las celdas de polarización." },
+                { question: "¿Qué gas potencialmente explosivo se puede generar en la superficie del cátodo (la estructura protegida)?", options: ["Oxígeno", "Cloro", "Hidrógeno", "Dióxido de carbono"], correctAnswer: 2, explanation: "La reacción de reducción en el cátodo puede producir gas hidrógeno, especialmente con altos niveles de protección catódica. El hidrógeno es altamente inflamable." },
+                { question: "En ciertos ambientes, ¿qué gas tóxico se puede generar en la superficie del ánodo de un sistema de corriente impresa?", options: ["Hidrógeno", "Oxígeno", "Nitrógeno", "Cloro"], correctAnswer: 3, explanation: "Si el electrolito contiene cloruros (como en agua de mar o suelos salinos), la reacción anódica puede generar gas cloro, que es tóxico y corrosivo." },
+                { question: "¿Por qué se deben evitar las mediciones de campo durante las tormentas eléctricas?", options: ["Porque la lluvia puede dañar el equipo", "Porque los rayos, incluso los remotos, pueden inducir voltajes peligrosos en las estructuras", "Porque es difícil escribir bajo la lluvia", "Porque los resultados no son precisos"], correctAnswer: 1, explanation: "Una estructura metálica larga como una tubería puede actuar como una antena, captando voltajes peligrosos de los rayos que caen incluso a kilómetros de distancia." },
+                { question: "Al trabajar en altura, es fundamental utilizar...", options: ["Un sombrero para el sol", "Equipo de protección contra caídas", "Botas con punta de acero", "Gafas de seguridad"], correctAnswer: 1, explanation: "Trabajar en altura introduce el riesgo de caídas, por lo que el uso de arneses, líneas de vida y otros equipos de protección contra caídas es obligatorio y crucial." },
+                { question: "El riesgo de ignición por una chispa eléctrica es mayor en áreas que pueden contener...", options: ["Agua", "Arena", "Hidrocarburos (gases o vapores combustibles)", "Nitrógeno"], correctAnswer: 2, explanation: "Una chispa de un sistema de PC puede actuar como fuente de ignición en atmósferas explosivas, como las que se encuentran cerca de válvulas de gas, venteos de tanques o en instalaciones de procesamiento." },
+                { question: "Una regla de seguridad fundamental al trabajar en excavaciones es tener siempre...", options: ["Un supervisor mirando", "Una forma de salir fácilmente (ej. una escalera)", "El motor del vehículo en marcha", "Música para el ánimo"], correctAnswer: 1, explanation: "Debe haber siempre un medio de egreso seguro y rápido, como una escalera o rampa, al alcance de cualquier persona que trabaje dentro de una excavación." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+        let lastCorrectIndex = -1; // Variable to track the last correct answer's position
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            lastCorrectIndex = -1; // Reset for each new game
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            // --- Logic to shuffle answers ---
+            const correctAnswerText = question.options[question.correctAnswer];
+            let shuffledOptions;
+            let newCorrectIndex;
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            do {
+                shuffledOptions = shuffleArray([...question.options]);
+                newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+            } while (currentQuestionIndex > 0 && newCorrectIndex === lastCorrectIndex && question.options.length > 1);
+            
+            lastCorrectIndex = newCorrectIndex;
+            // --- End of shuffle logic ---
+
+            answersContainer.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button, newCorrectIndex);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button, correctIndex) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                answersContainer.children[correctIndex].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            selectSet(currentSetIndex);
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
