@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenamiento Certificación NACE CP2 - Ejercicios Teoría de la Corrosión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Color de fondo oscuro */
+            color: #e2e8f0; /* Color de texto claro */
+        }
+        .game-container {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 6px 6px rgba(0,0,0,0.25);
+            border-radius: 20px;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        .btn-level {
+            background-color: #4a5568;
+            border: 2px solid #718096;
+        }
+        .btn-level:hover {
+            background-color: #718096;
+            border-color: #a0aec0;
+        }
+        .btn-answer {
+            background-color: #2d3748;
+            border: 2px solid #4a5568;
+        }
+        .btn-answer:hover {
+            background-color: #4a5568;
+            border-color: #718096;
+        }
+        .progress-bar-bg {
+            background-color: #2d3748;
+        }
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4299e1, #38b2ac);
+            transition: width 0.5s ease-in-out;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            animation: slide-up 0.4s ease-out;
+        }
+        .correct {
+            border-color: #48bb78 !important;
+            background-color: #2f855a !important;
+        }
+        .incorrect {
+            border-color: #f56565 !important;
+            background-color: #c53030 !important;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="game-container" class="game-container w-full max-w-3xl mx-auto p-6 md:p-8">
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2 text-cyan-400">Entrenamiento Certificación NACE CP2</h1>
+            <p class="text-center text-xl font-semibold text-cyan-300 mb-4">Tema: Ejercicios Teoría de la Corrosión</p>
+            <p class="text-center text-gray-400 mb-8">Selecciona un nivel para probar tus conocimientos.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="selectSet(0)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 1: Conceptos del Experimento</button>
+                <button onclick="selectSet(1)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 2: Ejercicios de Circuito en Serie</button>
+                <button onclick="selectSet(2)" class="btn btn-level text-lg font-semibold py-4 px-6 rounded-lg">Nivel 3: Ejercicios de Circuito en Paralelo</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del Juego -->
+        <div id="game-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="level-title" class="text-xl font-bold text-cyan-400"></h2>
+                <div id="score" class="text-lg font-semibold">Puntuación: 0</div>
+            </div>
+            <div class="w-full progress-bar-bg rounded-full h-4 mb-4 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p id="question-counter" class="text-sm text-gray-400 mb-2"></p>
+                <p id="question-text" class="text-xl md:text-2xl font-semibold"></p>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 gap-4">
+                <!-- Las opciones de respuesta se generarán aquí -->
+            </div>
+            <div class="mt-8 text-center">
+                 <button onclick="showStartScreen()" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Salir del Juego</button>
+            </div>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="hidden text-center">
+            <h2 id="end-title" class="text-3xl font-bold mb-4 text-cyan-400">¡Nivel Completado!</h2>
+            <p id="final-score" class="text-2xl mb-8"></p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button onclick="restartLevel()" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Reiniciar Nivel</button>
+                <button onclick="showStartScreen()" class="btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg">Elegir Otro Nivel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="modal-content w-full max-w-md p-6 rounded-lg text-center">
+            <h3 id="feedback-title" class="text-3xl font-bold mb-4"></h3>
+            <p id="feedback-explanation" class="mb-6 text-gray-300"></p>
+            <button id="next-question-btn" onclick="nextQuestion()" class="btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-8 rounded-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // Set 1: Conceptos del Experimento
+            [
+                { question: "En el Experimento 1.1, se utiliza una celda de corrosión con electrodos de Acero y Cobre. ¿Cuál de los dos metales actuará como ánodo?", options: ["Cobre", "Acero", "Ambos por igual", "Ninguno"], correctAnswer: 1, explanation: "Según la serie galvánica, el acero es más activo (más anódico) que el cobre. Por lo tanto, el acero se corroerá actuando como el ánodo." },
+                { question: "En el mismo experimento, el Cobre actuará como...", options: ["Ánodo", "Electrolito", "Cátodo", "Inhibidor"], correctAnswer: 2, explanation: "Siendo el metal menos activo (más noble) en la celda, el cobre funcionará como el cátodo, el sitio donde ocurre la reacción de reducción y donde no hay pérdida de metal." },
+                { question: "En la Parte B del experimento, se añade peróxido de hidrógeno (H₂O₂) al cátodo de cobre. El H₂O₂ actúa como un...", options: ["Inhibidor anódico", "Despolarizador catódico", "Aislante eléctrico", "Metal de sacrificio"], correctAnswer: 1, explanation: "El peróxido de hidrógeno es un agente oxidante que facilita la reacción de reducción en el cátodo. Al 'despolarizar' el cátodo, acelera la reacción y, por lo tanto, la velocidad de corrosión." },
+                { question: "Al añadir el despolarizador catódico (H₂O₂), ¿qué se espera que le suceda a la corriente de corrosión (Icorr)?", options: ["Disminuirá", "Se mantendrá igual", "Aumentará", "Se volverá cero"], correctAnswer: 2, explanation: "Al facilitar la reacción en el cátodo, el despolarizador elimina un 'cuello de botella' en el proceso, lo que permite que la corriente de corrosión fluya más fácilmente y, por lo tanto, aumente." },
+                { question: "En la Parte C del experimento, se añade nitrito de sodio al ánodo de acero. El nitrito de sodio actúa como un...", options: ["Despolarizador catódico", "Inhibidor anódico", "Catalizador", "Electrolito más fuerte"], correctAnswer: 1, explanation: "El nitrito de sodio es un inhibidor que ayuda a formar una película pasiva en la superficie del ánodo (acero). Esta película aumenta la polarización del ánodo, dificultando la corrosión." },
+                { question: "Al añadir el inhibidor anódico (nitrito de sodio), ¿qué se espera que le suceda a la corriente de corrosión (Icorr)?", options: ["Aumentará drásticamente", "Disminuirá", "Se mantendrá igual", "Se invertirá"], correctAnswer: 1, explanation: "Al dificultar la reacción en el ánodo (el origen de la corrosión), el inhibidor anódico ralentiza todo el proceso, lo que resulta en una disminución de la corriente de corrosión." },
+                { question: "El propósito de medir los potenciales de 'circuito abierto' es...", options: ["Medir la corriente máxima", "Conocer el potencial de cada metal antes de que interactúen en la celda", "Verificar la temperatura del agua", "Calcular la resistencia del circuito"], correctAnswer: 1, explanation: "El potencial de circuito abierto es el potencial natural de cada electrodo por sí solo en el electrolito, antes de conectarlos y permitir que fluya la corriente de corrosión." },
+                { question: "El propósito de medir los potenciales de 'circuito cerrado' (polarizados) es...", options: ["Ver el potencial de cada metal mientras la celda de corrosión está activa", "Detener la corrosión", "Medir la resistencia del agua", "Verificar la pureza de los metales"], correctAnswer: 0, explanation: "Cuando los metales están conectados y la corriente fluye, sus potenciales cambian debido a la polarización. Medir estos potenciales polarizados muestra cómo se comporta la celda en funcionamiento." },
+                { question: "Un diagrama de Evans, que se pide construir en el ejercicio, grafica...", options: ["Corriente vs. Tiempo", "Potencial vs. Logaritmo de la Corriente", "Resistencia vs. Temperatura", "pH vs. Potencial"], correctAnswer: 1, explanation: "Un diagrama de Evans es una herramienta gráfica que muestra las curvas de polarización del ánodo y del cátodo (potencial vs. log de la corriente) para visualizar el potencial y la corriente de corrosión de una celda." },
+                { question: "Según las conclusiones del experimento, tanto el despolarizador como el inhibidor causan un desplazamiento ____ en los potenciales de polarización.", options: ["Negativo", "Nulo", "Positivo", "Inverso"], correctAnswer: 2, explanation: "El documento concluye que tanto la adición de H₂O₂ (que hace el cátodo más noble) como la de nitrito de sodio (que pasiva el ánodo) resultan en un desplazamiento de los potenciales de la celda en la dirección positiva (más noble)." }
+            ],
+            // Set 2: Ejercicios de Circuito en Serie
+            [
+                { question: "EJERCICIO: Usando los resistores del tablero, se conectan en serie R₂ (1,000 Ω), R₃ (100 Ω) y R₄ (10 Ω). ¿Cuál es la resistencia total calculada (RT)?", options: ["1,000 Ω", "1,110 Ω", "890 Ω", "100,000 Ω"], correctAnswer: 1, explanation: "En un circuito en serie, la resistencia total es la suma de las resistencias individuales: RT = 1000 Ω + 100 Ω + 10 Ω = 1,110 Ω." },
+                { question: "EJERCICIO: Si se conecta una batería de 9 V al circuito en serie anterior (RT = 1,110 Ω), ¿cuál es la corriente total calculada (IT)?", options: ["8.1 mA", "123.3 mA", "9.9 A", "1.11 A"], correctAnswer: 0, explanation: "Usando la Ley de Ohm: I = V / R. IT = 9 V / 1,110 Ω = 0.0081 A, lo que equivale a 8.1 mA." },
+                { question: "EJERCICIO: En el mismo circuito en serie (IT = 8.1 mA), ¿cuál es la caída de voltaje calculada a través del resistor de 1,000 Ω (R₂)?", options: ["9 V", "0.81 V", "8.1 V", "0.081 V"], correctAnswer: 2, explanation: "La corriente es la misma en todo el circuito (8.1 mA = 0.0081 A). V₂ = I * R₂ = 0.0081 A * 1,000 Ω = 8.1 V." },
+                { question: "EJERCICIO: En el mismo circuito en serie (IT = 8.1 mA), ¿cuál es la caída de voltaje calculada a través del resistor de 100 Ω (R₃)?", options: ["0.81 V", "8.1 V", "9 V", "1.0 V"], correctAnswer: 0, explanation: "V₃ = I * R₃ = 0.0081 A * 100 Ω = 0.81 V." },
+                { question: "EJERCICIO: En el mismo circuito en serie (IT = 8.1 mA), ¿cuál es la caída de voltaje calculada a través del resistor de 10 Ω (R₄)?", options: ["0.0081 V", "8.1 V", "0.81 V", "0.081 V"], correctAnswer: 3, explanation: "V₄ = I * R₄ = 0.0081 A * 10 Ω = 0.081 V." },
+                { question: "EJERCICIO: Según la Ley de Voltaje de Kirchhoff, si sumas las caídas de voltaje calculadas (8.1 V + 0.81 V + 0.081 V), el resultado debería ser aproximadamente...", options: ["0 V", "10 V", "El voltaje de la batería (9 V)", "La resistencia total (1,110 V)"], correctAnswer: 2, explanation: "La suma de las caídas de voltaje (8.1 + 0.81 + 0.081 ≈ 8.99 V) debe ser igual al voltaje de la fuente (9 V), cumpliendo la Ley de Voltaje de Kirchhoff." },
+                { question: "En el ejercicio, se pide medir la resistencia de cada resistor. Si el valor medido difiere del nominal, se debe a...", options: ["Un error del fabricante", "La tolerancia del resistor", "La temperatura ambiente", "La batería baja"], correctAnswer: 1, explanation: "Los resistores reales no son perfectos y tienen una 'tolerancia' (ej. ±5%), lo que significa que su resistencia real puede variar ligeramente del valor impreso." },
+                { question: "Al medir la corriente en el circuito en serie con un amperímetro, ¿dónde se debe colocar el medidor?", options: ["En paralelo con la batería", "En paralelo con un resistor", "En serie, en cualquier punto del circuito", "No se puede medir"], correctAnswer: 2, explanation: "Para medir la corriente, el circuito debe abrirse y el amperímetro debe insertarse en serie para que toda la corriente del circuito fluya a través de él." },
+                { question: "Si la batería del ejercicio en realidad mide 8.8 V en lugar de 9 V, ¿cómo afectará esto a la corriente medida?", options: ["Será ligeramente mayor que la calculada con 9V", "No tendrá ningún efecto", "Será ligeramente menor que la calculada con 9V", "Hará que la corriente sea cero"], correctAnswer: 2, explanation: "Según la Ley de Ohm (I=V/R), la corriente es directamente proporcional al voltaje. Un voltaje de fuente ligeramente menor resultará en una corriente total ligeramente menor." },
+                { question: "Al medir las caídas de voltaje a través de cada resistor, ¿cómo se conecta el voltímetro?", options: ["En serie con el resistor", "En paralelo con el resistor", "En serie con la batería", "No se conecta"], correctAnswer: 1, explanation: "Un voltímetro se conecta siempre en paralelo con el componente a través del cual se quiere medir la diferencia de potencial (caída de voltaje)." }
+            ],
+            // Set 3: Ejercicios de Circuito en Paralelo
+            [
+                { question: "EJERCICIO: Se conectan en paralelo R₁ (10,000 Ω), R₂ (1,000 Ω) y R₃ (100 Ω). ¿Cuál es la resistencia total calculada (RT)?", options: ["11,100 Ω", "3,700 Ω", "Aproximadamente 90 Ω", "Aproximadamente 100 Ω"], correctAnswer: 2, explanation: "1/RT = 1/10000 + 1/1000 + 1/100 = 0.0001 + 0.001 + 0.01 = 0.0111. RT = 1 / 0.0111 ≈ 90.09 Ω. Note que la resistencia total es menor que la más pequeña." },
+                { question: "EJERCICIO: Si se conecta una batería de 9 V al circuito en paralelo anterior (RT ≈ 90 Ω), ¿cuál es la corriente total calculada (IT)?", options: ["1 A", "10 mA", "100 mA (0.1 A)", "900 mA"], correctAnswer: 2, explanation: "IT = V / RT = 9 V / 90.09 Ω ≈ 0.0999 A, que es aproximadamente 100 mA." },
+                { question: "EJERCICIO: En el mismo circuito en paralelo con 9 V, ¿cuál es la corriente calculada que pasa solo por la rama del resistor de 10,000 Ω (R₁)?", options: ["9 A", "9 mA", "0.9 mA", "0.09 mA"], correctAnswer: 2, explanation: "El voltaje en cada rama es 9 V. I₁ = V / R₁ = 9 V / 10,000 Ω = 0.0009 A, lo que equivale a 0.9 mA." },
+                { question: "EJERCICIO: En el mismo circuito en paralelo con 9 V, ¿cuál es la corriente calculada que pasa solo por la rama del resistor de 1,000 Ω (R₂)?", options: ["9 mA", "0.9 mA", "90 mA", "1 A"], correctAnswer: 0, explanation: "I₂ = V / R₂ = 9 V / 1,000 Ω = 0.009 A, lo que equivale a 9 mA." },
+                { question: "EJERCICIO: En el mismo circuito en paralelo con 9 V, ¿cuál es la corriente calculada que pasa solo por la rama del resistor de 100 Ω (R₃)?", options: ["900 mA", "9 A", "0.9 mA", "90 mA"], correctAnswer: 3, explanation: "I₃ = V / R₃ = 9 V / 100 Ω = 0.09 A, lo que equivale a 90 mA." },
+                { question: "EJERCICIO: Según la Ley de Corriente de Kirchhoff, si sumas las corrientes de las ramas calculadas (0.9 mA + 9 mA + 90 mA), el resultado debería ser...", options: ["Igual a la corriente de la rama más grande (90 mA)", "Cero", "Igual a la corriente total calculada (aprox. 100 mA)", "Igual al voltaje (9 V)"], correctAnswer: 2, explanation: "La suma de las corrientes de las ramas (0.9 + 9 + 90 = 99.9 mA) debe ser igual a la corriente total que sale de la fuente (aprox. 100 mA), cumpliendo la Ley de Corriente de Kirchhoff." },
+                { question: "En el circuito en paralelo, ¿qué resistor tiene la mayor cantidad de corriente fluyendo a través de él?", options: ["El de 10,000 Ω (mayor resistencia)", "El de 100 Ω (menor resistencia)", "El de 1,000 Ω (resistencia media)", "Todos tienen la misma corriente"], correctAnswer: 1, explanation: "En un circuito en paralelo, la corriente se divide. La mayor cantidad de corriente tomará el camino de menor resistencia. Por lo tanto, el resistor de 100 Ω tendrá la mayor corriente." },
+                { question: "Para medir la corriente en una sola rama del circuito en paralelo (ej. a través de R₂), ¿dónde se debe colocar el amperímetro?", options: ["En serie con la batería", "En paralelo con R₂", "En serie con R₂, dentro de esa rama específica", "En paralelo con la batería"], correctAnswer: 2, explanation: "Para medir la corriente de una rama, se debe abrir esa rama e insertar el amperímetro en serie, de modo que solo la corriente de esa rama pase por el medidor." },
+                { question: "Si se desconecta la rama con el resistor de 10,000 Ω, ¿qué le pasará a la resistencia total del circuito?", options: ["Disminuirá", "Aumentará", "Se mantendrá igual", "Se volverá cero"], correctAnswer: 1, explanation: "Al eliminar una ruta para la corriente, la resistencia total del circuito en paralelo aumenta. Habrá menos caminos disponibles para el flujo de la corriente." },
+                { question: "Si se desconecta la rama con el resistor de 10,000 Ω, ¿qué le pasará a la corriente total del circuito?", options: ["Aumentará", "Se mantendrá igual", "Disminuirá", "Se volverá cero"], correctAnswer: 2, explanation: "Dado que la resistencia total aumenta al quitar una rama, la corriente total que sale de la fuente de 9V disminuirá, según la Ley de Ohm (I=V/R)." }
+            ]
+        ];
+
+        let currentSetIndex;
+        let currentQuestionIndex;
+        let score;
+        let selectedSetQuestions;
+        let lastCorrectIndex = -1; // Variable to track the last correct answer's position
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelTitle = document.getElementById('level-title');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const endTitle = document.getElementById('end-title');
+        const finalScore = document.getElementById('final-score');
+
+        function selectSet(setIndex) {
+            currentSetIndex = setIndex;
+            selectedSetQuestions = questions[currentSetIndex];
+            startGame();
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            lastCorrectIndex = -1; // Reset for each new game
+            levelTitle.textContent = `Nivel ${currentSetIndex + 1}`;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / selectedSetQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${selectedSetQuestions.length}`;
+            questionText.textContent = question.question;
+
+            // --- Logic to shuffle answers ---
+            const correctAnswerText = question.options[question.correctAnswer];
+            let shuffledOptions;
+            let newCorrectIndex;
+            
+            const shuffleArray = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            do {
+                shuffledOptions = shuffleArray([...question.options]);
+                newCorrectIndex = shuffledOptions.indexOf(correctAnswerText);
+            } while (currentQuestionIndex > 0 && newCorrectIndex === lastCorrectIndex && question.options.length > 1);
+            
+            lastCorrectIndex = newCorrectIndex;
+            // --- End of shuffle logic ---
+
+            answersContainer.innerHTML = '';
+            shuffledOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('btn', 'btn-answer', 'w-full', 'p-4', 'text-left', 'rounded-lg');
+                button.onclick = () => selectAnswer(index, button, newCorrectIndex);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex, button, correctIndex) {
+            const question = selectedSetQuestions[currentQuestionIndex];
+            const isCorrect = selectedIndex === correctIndex;
+            
+            Array.from(answersContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                button.classList.add('correct');
+                feedbackTitle.textContent = "¡Correcto!";
+                feedbackTitle.style.color = '#48bb78';
+                feedbackExplanation.textContent = "¡Excelente trabajo!";
+            } else {
+                button.classList.add('incorrect');
+                answersContainer.children[correctIndex].classList.add('correct');
+                feedbackTitle.textContent = "¡Incorrecto!";
+                feedbackTitle.style.color = '#f56565';
+                feedbackExplanation.textContent = question.explanation;
+            }
+
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < selectedSetQuestions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            progressBar.style.width = '100%';
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endTitle.textContent = `¡Completaste el Nivel ${currentSetIndex + 1}!`;
+            finalScore.textContent = `Tu puntuación final es: ${score} de ${selectedSetQuestions.length}`;
+        }
+
+        function restartLevel() {
+            selectSet(currentSetIndex);
+        }
+
+        function showStartScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
